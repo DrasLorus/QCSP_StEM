@@ -59,3 +59,8 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+# Clangd Artifacts
+.cache
+
+# Build Artifacts
+build

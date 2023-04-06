@@ -1,3 +1,3 @@
 # QCSP_StEm
 
-QCSP Standalone Emitter
+QCSP **St**andalone **Em**itter
