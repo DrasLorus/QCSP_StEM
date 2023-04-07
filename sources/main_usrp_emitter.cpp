@@ -36,6 +36,7 @@
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/utils/thread.hpp>
 
+#include "CConvEngine/CHalfCorrEngine.hpp"
 #include "threads/timer.hpp"
 #include "threads/user_interface.hpp"
 #include "utilities/hmi_functions.hpp"
@@ -120,13 +121,6 @@ class CReadTransmitter : public CFaLNTransmitterBase {
 public:
     void load_symbols(int *) {}
     CReadTransmitter(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-};
-
-template <class T>
-class CFftwWrapper {
-public:
-    void do_fft(std::complex<T> *, std::complex<T> *) {}
-    void do_ifft(std::complex<T> *, std::complex<T> *) {}
 };
 
 int UHD_SAFE_MAIN(int argc, char ** argv) {
@@ -226,30 +220,26 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         fwrite(&conv_size, sizeof(size_t), 1, file_frames);
     }
 
-    CFftwWrapper<double> conv_engine; //(conv_size, FFTW_MEASURE);
+    QCSP::CHalfCorrEngine<float> * conv_engine;
+    ;
 
-    int8_t * gen_char_out = new int8_t[gen_outsize];
-    int8_t * gen_upsp_out = new int8_t[conv_size];
-    memset(gen_upsp_out, 0, sizeof(int8_t) * conv_size); // needed since data is not placed at the beginning nor the end
-    int8_t * const data_beg_upsp = gen_upsp_out + (h_filter.size() - 1);
+    std::vector<int8_t> gen_char_out(gen_outsize, 0);
+    std::vector<int8_t> gen_upsp_out(conv_size, 0);
 
-    std::complex<double> * gen_cpx_out     = new std::complex<double>[conv_size];
-    std::complex<double> * fft_gen_cpx_out = new std::complex<double>[conv_size];
-    std::complex<double> * prod_gen_h      = new std::complex<double>[conv_size];
-    std::complex<double> * filtered_data   = new std::complex<double>[conv_size];
-    std::complex<double> * fft_h_cpx       = new std::complex<double>[conv_size];
+    std::vector<int8_t>::iterator data_beg_upsp = gen_upsp_out.begin() + (h_filter.size() - 1);
 
+    std::vector<std::complex<float>> gen_cpx_out(conv_size, 0);
+    std::vector<std::complex<float>> filtered_data(conv_size, 0);
     std::vector<std::complex<float>> buffer(conv_size, 0);
 
+    float * const ptr_raw_fdata  = (float *) filtered_data.data();
+    float * const ptr_raw_buffer = (float *) buffer.data();
+
     do {
-        std::complex<double> * h_filter_cpx = new std::complex<double>[conv_size];
+        std::vector<std::complex<float>> h_filter_cpx(conv_size, 0);
+        std::copy(h_filter.cbegin(), h_filter.cend(), h_filter_cpx.begin());
 
-        std::complex<double> * tmp = copy(h_filter.cbegin(), h_filter.cend(), h_filter_cpx);
-        fill(tmp, h_filter_cpx + conv_size, std::complex<double>(0, 0));
-
-        conv_engine.do_fft(h_filter_cpx, fft_h_cpx);
-
-        delete[] h_filter_cpx;
+        conv_engine = new QCSP::CHalfCorrEngine<float>(conv_size, h_filter_cpx, FFTW_MEASURE);
     } while (0);
 
     size_t cnt = 0;
@@ -290,19 +280,16 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
         generator->process();
 
-        std::copy(gen_out_int, gen_out_int + gen_outsize, gen_char_out);
-        upsample8<int8_t, int8_t, QCSP::_NSYMBOL_ * QCSP::_GF_>(gen_char_out, data_beg_upsp);
-        copy(gen_upsp_out, gen_upsp_out + conv_size, gen_cpx_out);
-        conv_engine.do_fft(gen_cpx_out, fft_gen_cpx_out);
+        std::copy(gen_out_int, gen_out_int + gen_outsize, gen_char_out.begin());
+        upsample8<int8_t, int8_t, QCSP::_NSYMBOL_ * QCSP::_GF_>(gen_char_out.data(), data_beg_upsp.base());
+        copy(gen_upsp_out.begin(), gen_upsp_out.begin() + conv_size, gen_cpx_out.begin());
 
-        for (size_t sz = 0; sz < conv_size; sz++) {
-            prod_gen_h[sz] = fft_gen_cpx_out[sz] * fft_h_cpx[sz];
-        }
+        conv_engine->process(gen_cpx_out, filtered_data);
 
-        conv_engine.do_ifft(prod_gen_h, filtered_data);
-
-        for (size_t sz = 0; sz < conv_size; sz++) {
-            buffer[sz] = std::complex<float>(filtered_data[sz].real(), 0.f); // Remove unnecessary imaginary parts introduced by FFT
+        for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
+            // Remove unnecessary imaginary parts introduced by FFT
+            ptr_raw_buffer[sz]     = ptr_raw_fdata[sz];
+            ptr_raw_buffer[sz + 1] = 0;
         }
 
         if (to_file) {
@@ -312,7 +299,7 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         }
 
         if (bool(file_frames)) {
-            fwrite((float *) buffer.data(), sizeof(float), conv_size * 2, file_frames);
+            fwrite(ptr_raw_buffer, sizeof(float), conv_size * 2, file_frames);
         }
 
         std::this_thread::sleep_for(wait_time);
@@ -320,6 +307,7 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         const bool tmp_cond = ++cnt < max_count;
         bCountNotReached    = (count_limited ? tmp_cond : true);
     }
+
     if (!bCountNotReached) {
         std::cout << "Transmission finished." << std::endl;
     }
@@ -342,13 +330,7 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         delete[] symbols;
     }
 
-    delete[] gen_char_out;
-    delete[] gen_upsp_out;
-    delete[] gen_cpx_out;
-    delete[] fft_h_cpx;
-    delete[] fft_gen_cpx_out;
-    delete[] prod_gen_h;
-    delete[] filtered_data;
+    delete conv_engine;
 
     if (bool(file_frames)) {
         fclose(file_frames);

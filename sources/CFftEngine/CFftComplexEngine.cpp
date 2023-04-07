@@ -1,0 +1,148 @@
+#include <complex>
+#include <cstddef>
+#include <cstring>
+#include <fftw3.h>
+#include <vector>
+
+#include "./CFftComplexEngine.hpp"
+#include "./CFftTemplateEngine.hpp"
+
+size_t QCSP::CFftEngine<std::complex<float>>::size() const { return fft_size; }
+
+void QCSP::CFftEngine<std::complex<float>>::set_fftw() {
+    ptr_in  = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * fft_size);
+    ptr_out = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * fft_size);
+
+    plan_fft = fftwf_plan_dft_1d(fft_size, ptr_in, ptr_out, FFTW_FORWARD, fftw_plan_strat);
+}
+
+void QCSP::CFftEngine<std::complex<float>>::clear_fftw() {
+    fftwf_free(ptr_in);
+    fftwf_free(ptr_out);
+    fftwf_destroy_plan(plan_fft);
+}
+
+void QCSP::CFftEngine<std::complex<float>>::process(const complex_vector & input, complex_vector & output) {
+    const real_t * in = (const real_t *) input.data();
+    std::memcpy((real_t *) ptr_in, in, fft_size * 2 * sizeof(real_t));
+
+    fftwf_execute(plan_fft);
+
+    real_t * out = (real_t *) output.data();
+    std::memcpy((real_t *) out, (real_t *) ptr_out, fft_size * 2 * sizeof(real_t));
+}
+
+QCSP::CFftEngine<std::complex<float>>::CFftEngine(size_t size, unsigned plan_strategy)
+    : fft_size(size),
+      fftw_plan_strat(plan_strategy) {
+    set_fftw();
+}
+
+QCSP::CFftEngine<std::complex<float>>::~CFftEngine() { clear_fftw(); }
+
+/******* IFFT COMPLEX FLOAT ********/
+
+void QCSP::CIfftEngine<std::complex<float>>::set_fftw() {
+    ptr_in  = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * fft_size);
+    ptr_out = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * fft_size);
+
+    plan_ifft = fftwf_plan_dft_1d(fft_size, ptr_in, ptr_out, FFTW_BACKWARD, fftw_plan_strat);
+}
+
+void QCSP::CIfftEngine<std::complex<float>>::clear_fftw() {
+    fftwf_free(ptr_in);
+    fftwf_free(ptr_out);
+    fftwf_destroy_plan(plan_ifft);
+}
+
+size_t QCSP::CIfftEngine<std::complex<float>>::size() const { return fft_size; }
+
+void QCSP::CIfftEngine<std::complex<float>>::process(const complex_vector & input, complex_vector & output) {
+    const real_t * in = (const real_t *) input.data();
+    std::memcpy((real_t *) ptr_in, in, fft_size * 2 * sizeof(real_t));
+
+    fftwf_execute(plan_ifft);
+
+    real_t * out = (real_t *) output.data();
+    for (int i = 0; i < fft_size * 2; i++) {
+        out[i] = *((real_t *) ptr_out) / real_t(fft_size);
+    }
+}
+
+QCSP::CIfftEngine<std::complex<float>>::CIfftEngine(size_t size, unsigned plan_strategy)
+    : fft_size(size),
+      fftw_plan_strat(plan_strategy) {
+    set_fftw();
+}
+
+QCSP::CIfftEngine<std::complex<float>>::~CIfftEngine() { clear_fftw(); }
+
+/******* IFFT COMPLEX DOUBLE *******/
+
+void QCSP::CFftEngine<std::complex<double>>::set_fftw() {
+    ptr_in  = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fft_size);
+    ptr_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fft_size);
+
+    plan_fft = fftw_plan_dft_1d(fft_size, ptr_in, ptr_out, FFTW_FORWARD, fftw_plan_strat);
+}
+
+void QCSP::CFftEngine<std::complex<double>>::clear_fftw() {
+    fftw_free(ptr_in);
+    fftw_free(ptr_out);
+    fftw_destroy_plan(plan_fft);
+}
+
+size_t QCSP::CFftEngine<std::complex<double>>::size() const { return fft_size; }
+
+void QCSP::CFftEngine<std::complex<double>>::process(const complex_vector & input, complex_vector & output) {
+    const real_t * in = (const real_t *) input.data();
+    std::memcpy((real_t *) ptr_in, in, fft_size * 2 * sizeof(real_t));
+
+    fftw_execute(plan_fft);
+
+    real_t * out = (real_t *) output.data();
+    std::memcpy((real_t *) out, (real_t *) ptr_out, fft_size * 2 * sizeof(real_t));
+}
+
+QCSP::CFftEngine<std::complex<double>>::CFftEngine(size_t size, unsigned plan_strategy)
+    : fft_size(size),
+      fftw_plan_strat(plan_strategy) {
+    set_fftw();
+}
+
+QCSP::CFftEngine<std::complex<double>>::~CFftEngine() { clear_fftw(); }
+
+void QCSP::CIfftEngine<std::complex<double>>::set_fftw() {
+    ptr_in  = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fft_size);
+    ptr_out = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fft_size);
+
+    plan_ifft = fftw_plan_dft_1d(fft_size, ptr_in, ptr_out, FFTW_BACKWARD, fftw_plan_strat);
+}
+
+void QCSP::CIfftEngine<std::complex<double>>::clear_fftw() {
+    fftw_free(ptr_in);
+    fftw_free(ptr_out);
+    fftw_destroy_plan(plan_ifft);
+}
+
+size_t QCSP::CIfftEngine<std::complex<double>>::size() const { return fft_size; }
+
+void QCSP::CIfftEngine<std::complex<double>>::process(const complex_vector & input, complex_vector & output) {
+    const real_t * in = (const real_t *) input.data();
+    std::memcpy((real_t *) ptr_in, in, fft_size * 2 * sizeof(real_t));
+
+    fftw_execute(plan_ifft);
+
+    real_t * out = (real_t *) output.data();
+    for (int i = 0; i < fft_size * 2; i++) {
+        out[i] = *((real_t *) ptr_out) / real_t(fft_size);
+    }
+}
+
+QCSP::CIfftEngine<std::complex<double>>::CIfftEngine(size_t size, unsigned plan_strategy)
+    : fft_size(size),
+      fftw_plan_strat(plan_strategy) {
+    set_fftw();
+}
+
+QCSP::CIfftEngine<std::complex<double>>::~CIfftEngine() { clear_fftw(); }

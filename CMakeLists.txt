@@ -52,6 +52,7 @@ add_executable (
   sources/threads/timer.cpp
   sources/utilities/hmi_functions.cpp
   sources/utilities/usrp_functions.cpp
+  sources/CFftEngine/CFftComplexEngine.cpp
 )
 target_include_directories (emitter_usrp PUBLIC sources)
 target_include_directories (emitter_usrp SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
@@ -60,6 +61,8 @@ target_link_libraries (
   PRIVATE ${UHD_LIBRARIES}
           Boost::program_options
           matio
+          ${fftw}
+          ${fftwf}
           Threads::Threads
 )
 
