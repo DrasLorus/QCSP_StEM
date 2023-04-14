@@ -53,6 +53,7 @@ add_executable (
   sources/utilities/hmi_functions.cpp
   sources/utilities/usrp_functions.cpp
   sources/CFftEngine/CFftComplexEngine.cpp
+  sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
 )
 target_include_directories (emitter_usrp PUBLIC sources)
 target_include_directories (emitter_usrp SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
