@@ -45,7 +45,7 @@
 // #include "00-Common/CFftwWrapper/CFftwWrapper.hpp"
 // #include "CFaLNWrapper/CFaLNTransmitter.hpp"
 
-#include "GPSReader/GPSReader.hpp"
+#include "CSymbolGenerator/GPSGenerator/GPSReader.hpp"
 
 // using FaLN_X::CFrame;
 
@@ -248,11 +248,11 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
     std::atomic<bool> bTimeNotReached(true);
 
     QCSP::CGPSReader * gps_gen = nullptr;
-    int *              symbols = nullptr;
+    std::vector<int>   symbols;
     if (gen_type == GPS) {
-        symbols = new int[QCSP::_KSYMBOL_];
-        memset(symbols, 0, QCSP::_KSYMBOL_ * sizeof(int));
-        gps_gen = new QCSP::CGPSReader(gps_tty);
+        symbols.resize(QCSP::_KSYMBOL_);
+        memset(symbols.data(), 0, QCSP::_KSYMBOL_ * sizeof(int));
+        gps_gen = new QCSP::CGPSReader(gps_tty, false);
         gps_gen->launch();
     }
 
@@ -268,14 +268,15 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
     const size_t min_size   = size_t(ceil(frame_time * 2));
     const size_t true_delay = std::max(min_size, inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
 
-    bool       bCountNotReached = true;
-    const auto wait_time        = std::chrono::microseconds(true_delay);
+    bool bCountNotReached = true;
+
+    const std::chrono::microseconds wait_time = std::chrono::microseconds(true_delay);
 
     while (bRunning && bCountNotReached && bTimeNotReached) {
 
         if (bool(gps_gen)) {
-            gps_gen->get_symbol_frame(symbols);
-            std::dynamic_pointer_cast<CReadTransmitter<QCSP::_KSYMBOL_, QCSP::_LOG2GF_>>(generator)->load_symbols(symbols);
+            gps_gen->process(symbols);
+            std::dynamic_pointer_cast<CReadTransmitter<QCSP::_KSYMBOL_, QCSP::_LOG2GF_>>(generator)->load_symbols(symbols.data());
         }
 
         generator->process();
@@ -327,7 +328,6 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         gps_gen->stop();
         gps_gen->join();
         delete gps_gen;
-        delete[] symbols;
     }
 
     delete conv_engine;

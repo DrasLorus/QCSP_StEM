@@ -130,6 +130,12 @@ public:
     virtual ~CIfftEngine();
 };
 
+template <class TFloat>
+using CFftComplexEngine = CFftEngine<std::complex<TFloat>>;
+
+template <class TFloat>
+using CIfftComplexEngine = CIfftEngine<std::complex<TFloat>>;
+
 } // namespace QCSP
 
 #endif // _FFT_COMPLEX_ENGINE_HPP_

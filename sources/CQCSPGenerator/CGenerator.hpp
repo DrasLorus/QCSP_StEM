@@ -8,7 +8,7 @@ namespace QCSP {
 
 class CGenerator {
     public:
-        virtual void process(std::vector<float> & output);
+        virtual void process(const std::vector<float> & input, std::vector<float> & output);
 };
 
 }

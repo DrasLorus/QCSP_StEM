@@ -30,10 +30,11 @@
 #include <thread>
 
 #include "utilities/definitions.hpp"
+#include "CSymbolGenerator/CSymbolGenerator.hpp"
 
 namespace QCSP {
 
-class CGPSReader {
+class CGPSReader : public CSymbolGenerator {
 private:
     nmea::NMEAParser * _parser;
     nmea::GPSService * _gps;
@@ -43,11 +44,13 @@ private:
 
     std::thread *     _t;
     std::atomic<bool> running;
+    const bool        use_localtime;
 
     int * frame;
 
     float      lat;
     float      lon;
+    float      raw_time;
     std::mutex m_frame;
 
     uint16_t counter;
@@ -66,9 +69,9 @@ public:
     int join();
     int stop();
 
-    void get_symbol_frame(int * symbols);
+    virtual void process(std::vector<int> & symbols) override;
 
-    CGPSReader(const std::string & tty_gps = "/dev/ttyUSB0");
+    CGPSReader(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true);
 
     virtual ~CGPSReader();
 };

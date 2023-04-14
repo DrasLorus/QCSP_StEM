@@ -67,7 +67,7 @@ target_link_libraries (
 )
 
 if (ENABLE_NEMATODE)
-  target_sources (emitter_usrp PRIVATE sources/GPSReader/GPSReader.cpp)
+  target_sources (emitter_usrp PRIVATE sources/CSymbolGenerator/GPSGenerator/GPSReader.cpp)
   target_include_directories (emitter_usrp SYSTEM PRIVATE gps-nematode/include)
   target_link_libraries (emitter_usrp PRIVATE NemaTode)
 endif ()
