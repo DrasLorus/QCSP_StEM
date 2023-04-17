@@ -1,3 +1,4 @@
+#include <boost/program_options/variables_map.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -10,6 +11,8 @@
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/utils/thread.hpp>
+
+#include "utilities/structures.hpp"
 
 namespace po = boost::program_options;
 
@@ -72,31 +75,26 @@ using vm_t     = po::variables_map;
 using p_usrp_t = uhd::usrp::multi_usrp::sptr;
 using p_tx_t   = uhd::tx_streamer::sptr;
 
-void init_usrp(const std::string & device_args,
-               const vm_t &        vm,
-               const std::string & ant,
-               double              rate,
-               double              freq,
-               double              gain,
+void init_usrp(const emitter_parameters & prm,
                p_usrp_t &          emitter_usrp,
                p_tx_t &            send_stream) {
-    emitter_usrp = uhd::usrp::multi_usrp::make(device_args);
+    emitter_usrp = uhd::usrp::multi_usrp::make(prm.device_args);
 
-    if (vm.count("clock-source")) {
-        emitter_usrp->set_clock_source(vm.at("clock-source").as<std::string>());
+    if (prm.has_clock_source) {
+        emitter_usrp->set_clock_source(prm.clock_source);
     }
 
-    if (vm.count("subdev")) {
-        emitter_usrp->set_tx_subdev_spec(vm.at("subdev").as<std::string>());
+    if (prm.has_subdev) {
+        emitter_usrp->set_tx_subdev_spec(prm.subdev);
     }
 
-    emitter_usrp->set_tx_antenna(ant);
+    emitter_usrp->set_tx_antenna(prm.ant);
 
-    emitter_usrp->set_tx_rate(rate);
-    emitter_usrp->set_tx_freq(freq);
-    emitter_usrp->set_tx_gain(gain);
-    if (vm.count("bandwidth")) {
-        emitter_usrp->set_tx_bandwidth(vm.at("bandwidth").as<double>());
+    emitter_usrp->set_tx_rate(prm.rate);
+    emitter_usrp->set_tx_freq(prm.freq);
+    emitter_usrp->set_tx_gain(prm.gain);
+    if (prm.has_bandwidth) {
+        emitter_usrp->set_tx_bandwidth(prm.bandwidth);
     }
 
     emitter_usrp->set_time_now(0.0);
@@ -110,7 +108,7 @@ void init_usrp(const std::string & device_args,
               << std::endl;
     std::cout.precision(prec);
 
-    uhd::stream_args_t stream_args(vm.at("cpu-format").as<std::string>(), vm.at("otw-format").as<std::string>());
+    uhd::stream_args_t stream_args(prm.cpu_format, prm.otw_format);
     send_stream = emitter_usrp->get_tx_stream(stream_args);
 }
 

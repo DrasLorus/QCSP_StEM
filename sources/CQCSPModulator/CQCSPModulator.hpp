@@ -5,16 +5,9 @@
 #include <vector>
 
 #include "utilities/definitions.hpp"
+#include "utilities/structures.hpp"
 
 namespace QCSP {
-
-
-typedef enum {
-    MOD_UNKNOW,
-    // MOD_FAKE,
-    // MOD_ZERO,
-    MOD_REAL
-} modulator_t;
 
 modulator_t mod_from_string(const std::string & in);
 

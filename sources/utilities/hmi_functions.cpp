@@ -3,16 +3,19 @@
 #include <boost/program_options.hpp>
 #include <matio.h>
 
+#include <string>
 #include <uhd/exception.hpp>
 // #include <uhd/types/tune_request.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 // #include <uhd/utils/safe_main.hpp>
 // #include <uhd/utils/thread.hpp>
 
-#include "./definitions.hpp"
-#include "./usrp_functions.hpp"
+#include "CQCSPModulator/CQCSPModulator.hpp"
+#include "CSymbolGenerator/CSymbolGenerator.hpp"
 
-namespace QCSP {
+#include "./definitions.hpp"
+#include "./hmi_functions.hpp"
+#include "./usrp_functions.hpp"
 
 namespace po = boost::program_options;
 
@@ -21,6 +24,8 @@ namespace po = boost::program_options;
                         << desc << "\n\n"                                                                 \
                         << "Note: <rate>, <freq>, <gain> and <antenna> must be specified exactly once,\n" \
                         << "either passed as positional or dashed arguments.\n"
+
+namespace {
 
 void exit_if(bool condition, const std::string & message) {
     if (condition) {
@@ -36,7 +41,9 @@ void throw_if(bool condition, Exception && e) {
     }
 }
 
-int parse_user_input(int argc, char ** argv, po::variables_map & vm) {
+} // namespace
+
+int QCSP::parse_user_input(int argc, char * argv[], po::variables_map & vm) {
 
     po::options_description desc;
     desc.add_options()(
@@ -68,10 +75,10 @@ int parse_user_input(int argc, char ** argv, po::variables_map & vm) {
         "to-file", "Write to a file instead of a USRP.")(
         "save-frames", "Emit but also store frames locally")(
         "generator", po::value<std::string>()->default_value("gps"), "Set the generator used. Either 'random' (randomly generated bits),"
-                                                                        " 'timer' (to use the predictable CTimerTransmitter),"
-                                                                        " 'zero' (to send only zeroes) or 'gps' (binary payload with GPS position).")(
+                                                                     " 'timer' (to use the predictable CTimerTransmitter),"
+                                                                     " 'zero' (to send only zeroes) or 'gps' (binary payload with GPS position).")(
         "modulator", po::value<std::string>()->default_value("real"), "Set the modulator used. Either 'real' (true QCSP modulator),"
-                                                                        " or 'fake' (generate a valid frame independently of the payload).")(
+                                                                      " or 'fake' (generate a valid frame independently of the payload).")(
         "tty", po::value<std::string>()->default_value("/dev/ttyS0"), "Set the TTY used to read GPS data. Only used with the 'gps' generator.")(
         "no-ui", "Disable the UI (program no longer cleanly stoppable by the user).")(
         "probe", "Look for all available USRP.");
@@ -117,7 +124,7 @@ int parse_user_input(int argc, char ** argv, po::variables_map & vm) {
  * @brief cancellation point
  *
  */
-void load_settings(
+void QCSP::load_settings(
     const std::string &                filename,
     unsigned &                         n_frame,
     unsigned &                         n_s,
@@ -190,4 +197,65 @@ void load_settings(
     exit_if(Mat_Close(mat_params), "Error closing " + filename);
 }
 
-} // namespace QCSP
+void QCSP::parse_vm(const po::variables_map & vm, emitter_parameters & prm) {
+    prm.device_args = vm.at("device").as<std::string>();
+    prm.ant         = vm.at("antenna").as<std::string>();
+
+    prm.rate = vm.at("rate").as<double>();
+    prm.freq = vm.at("freq").as<double>();
+    prm.gain = vm.at("gain").as<double>();
+
+    prm.inter_delay = size_t(std::max(ceil(vm.at("inter-delay").as<double>()), 0.));
+
+    const bool max_count = vm.at("count").as<unsigned>();
+    prm.max_count        = max_count;
+    prm.count_limited    = max_count > 0;
+
+    const double ttl_us = ceil(vm.at("duration").as<double>());
+    prm.ttl_us          = ttl_us;
+    prm.time_limited    = ttl_us > 0;
+
+    prm.to_file     = vm.count("to-file");
+    prm.save_frames = vm.count("save-frames");
+    prm.no_ui       = vm.count("no-ui");
+
+    prm.gen_type = QCSP::gen_from_string(vm.at("generator").as<std::string>());
+    prm.mod_type = QCSP::mod_from_string(vm.at("modulator").as<std::string>());
+
+    const std::string gps_tty = vm.at("tty").as<std::string>();
+    prm.gps_tty               = gps_tty;
+    if (prm.gen_type == QCSP::GEN_GPS) {
+        if (FILE * test = fopen(gps_tty.c_str(), "r")) {
+            fclose(test);
+        } else {
+            throw std::runtime_error("while opening the GPS tty " + gps_tty + ":\n    " + std::string(strerror(errno)));
+        }
+    }
+
+    const bool has_clock_source = vm.count("clock-source");
+    prm.has_clock_source        = has_clock_source;
+    if (has_clock_source) {
+        prm.clock_source = vm.at("clock-source").as<std::string>();
+    } else {
+        prm.clock_source = "";
+    }
+
+    const bool has_subdev = vm.count("subdev");
+    prm.has_subdev        = has_subdev;
+    if (has_subdev) {
+        prm.subdev = vm.at("subdev").as<std::string>();
+    } else {
+        prm.subdev = "";
+    }
+
+    const bool has_bandwidth = vm.count("bandwidth");
+    prm.has_bandwidth        = has_bandwidth;
+    if (has_bandwidth) {
+        prm.bandwidth = vm.at("bandwidth").as<double>();
+    } else {
+        prm.bandwidth = -1.0;
+    }
+
+    prm.cpu_format = vm.at("cpu-format").as<std::string>();
+    prm.otw_format = vm.at("otw-format").as<std::string>();
+}

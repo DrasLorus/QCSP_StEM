@@ -4,9 +4,9 @@ QCSP::generator_t QCSP::gen_from_string(const std::string & in) {
     // if (in == "random") {
     //     return RANDOM;
     // }
-    // if (in == "timer") {
-    //     return TIMER;
-    // }
+    if (in == "timer") {
+        return GEN_TIMER;
+    }
     // if (in == "zero") {
     //     return ZERO;
     // }

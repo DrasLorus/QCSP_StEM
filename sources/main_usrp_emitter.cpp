@@ -24,30 +24,18 @@
 #include <memory>
 #include <thread>
 
-#include <boost/program_options.hpp>
-
-#include <fftw3.h>
-// #include <fftw3f.h>
-#include <matio.h>
-
-#include <uhd/exception.hpp>
-#include <uhd/types/tune_request.hpp>
-#include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/utils/thread.hpp>
 
 #include "CConvEngine/CHalfCorrEngine.hpp"
 #include "CQCSPModulator/CCompleteModulator/CCompleteModulator.hpp"
 #include "CQCSPModulator/CQCSPModulator.hpp"
+#include "CSymbolGenerator/CGPSGenerator/CGPSGenerator.hpp"
+#include "CSymbolGenerator/CTimerGenerator/CTimerGenerator.hpp"
 #include "threads/timer.hpp"
 #include "threads/user_interface.hpp"
 #include "utilities/hmi_functions.hpp"
 #include "utilities/usrp_functions.hpp"
-
-// #include "00-Common/CFftwWrapper/CFftwWrapper.hpp"
-// #include "CFaLNWrapper/CFaLNTransmitter.hpp"
-
-#include "CSymbolGenerator/GPSGenerator/GPSGenerator.hpp"
 
 // using FaLN_X::CFrame;
 
@@ -70,88 +58,27 @@ void upsample8(const Tin * __restrict in, Tout * __restrict out) {
     }
 }
 
-class CFaLNTransmitterBase {
-public:
-    int *  output() { return nullptr; };
-    size_t output_size() const { return 0; }
-    void   process() {}
-
-    CFaLNTransmitterBase() = default;
-    CFaLNTransmitterBase(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-    virtual ~CFaLNTransmitterBase() = default;
-};
-
-class CRealTransmitter : public CFaLNTransmitterBase {
-public:
-    CRealTransmitter(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-};
-class CZeroTransmitter : public CFaLNTransmitterBase {
-public:
-    CZeroTransmitter(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-};
-class CTimeTransmitter : public CFaLNTransmitterBase {
-public:
-    CTimeTransmitter(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-};
-
-template <unsigned N, unsigned q>
-class CReadTransmitter : public CFaLNTransmitterBase {
-public:
-    void load_symbols(int *) {}
-    CReadTransmitter(const std::vector<int8_t> &, const std::vector<int8_t> &) {}
-};
-
-int UHD_SAFE_MAIN(int argc, char ** argv) {
+int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     uhd::set_thread_priority_safe();
 
-    po::variables_map vm;
+    po::variables_map        vm;
+    QCSP::emitter_parameters prm;
 
     if (QCSP::parse_user_input(argc, argv, vm) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
-    const std::string device_args = vm.at("device").as<std::string>();
-    const std::string ant         = vm.at("antenna").as<std::string>();
-    const double      rate        = vm.at("rate").as<double>();
-    const double      freq        = vm.at("freq").as<double>();
-    const double      gain        = vm.at("gain").as<double>();
-
-    const size_t inter_delay = (size_t) std::max(ceil(vm.at("inter-delay").as<double>()), 0.);
-
-    const size_t max_count     = vm.at("count").as<unsigned>();
-    const bool   count_limited = max_count > 0;
-
-    const double ttl_us       = ceil(vm.at("duration").as<double>());
-    const bool   time_limited = ttl_us > 0;
-
-    const bool to_file     = vm.count("to-file");
-    const bool save_frames = vm.count("save-frames");
-
-    const bool no_ui = vm.count("no-ui");
-
-    const QCSP::generator_t gen_type = QCSP::gen_from_string(vm.at("generator").as<std::string>());
-    const QCSP::modulator_t mod_type = QCSP::mod_from_string(vm.at("modulator").as<std::string>());
+    QCSP::parse_vm(vm, prm);
 
     uhd::usrp::multi_usrp::sptr emitter_usrp;
     uhd::tx_streamer::sptr      send_stream;
-
-    const std::string gps_tty = vm.at("tty").as<std::string>();
-    if (gen_type == QCSP::GEN_GPS) {
-        if (FILE * test = fopen(gps_tty.c_str(), "r")) {
-            fclose(test);
-        } else {
-            throw std::runtime_error("while opening the GPS tty " + gps_tty + ":\n    " + std::string(strerror(errno)));
-            return EXIT_FAILURE;
-        }
-    }
-
-    if (!to_file) {
-        QCSP::init_usrp(device_args, vm, ant, rate, freq, gain, emitter_usrp, send_stream);
+    if (!prm.to_file) {
+        QCSP::init_usrp(prm, emitter_usrp, send_stream);
     }
 
     FILE * file_frames = nullptr;
-    if (save_frames) {
+    if (prm.save_frames) {
         file_frames = fopen("saved_frames.bin", "wb");
     }
 
@@ -168,18 +95,18 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     std::shared_ptr<QCSP::CSymbolGenerator> generator;
     // if (vm.count("timer-generator")) {
-    switch (gen_type) {
+    switch (prm.gen_type) {
         // case QCSP::GEN_RANDOM:
         //     generator = std::make_shared<CRandomGenerator>(n_frame, n_s);
         //     break;
-        // case QCSP::GEN_TIMER:
-        //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
-        //     break;
+        case QCSP::GEN_TIMER:
+            generator = std::make_shared<QCSP::CTimerGenerator>();
+            break;
         // case QCSP::GEN_ZERO:
         //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
         //     break;
         case QCSP::GEN_GPS:
-            generator = std::make_shared<QCSP::CGPSGenerator>(gps_tty, false, true);
+            generator = std::make_shared<QCSP::CGPSGenerator>(prm.gps_tty, false, true);
             break;
         default:
             std::cerr << "Error: generator type is unknown." << std::endl;
@@ -187,7 +114,7 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
     }
 
     std::shared_ptr<QCSP::CQCSPModulator> modulator;
-    switch (mod_type) {
+    switch (prm.mod_type) {
         // case QCSP::MOD_FAKE:
         //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
         //     break;
@@ -239,17 +166,17 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
     std::atomic<bool> bRunning(true);
     std::atomic<bool> bTimeNotReached(true);
 
-    QCSP::ui_arg_t ui_arg = {std::ref(bRunning), no_ui};
+    QCSP::ui_arg_t ui_arg = {std::ref(bRunning), prm.no_ui};
     pthread_t      ui_tid = 0;
     pthread_create(&ui_tid, nullptr, &QCSP::user_interface_run, &ui_arg);
 
-    QCSP::timer_arg_t timer_arg = {time_limited, ttl_us, std::ref(bTimeNotReached)};
+    QCSP::timer_arg_t timer_arg = {prm.time_limited, prm.ttl_us, std::ref(bTimeNotReached)};
     pthread_t         timer_tid = 0;
     pthread_create(&timer_tid, nullptr, &QCSP::timer_run, &timer_arg);
 
-    const double frame_time = 1 / rate * 1e6 * double(conv_size);
+    const double frame_time = 1 / prm.rate * 1e6 * double(conv_size);
     const size_t min_size   = size_t(ceil(frame_time * 2));
-    const size_t true_delay = std::max(min_size, inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
+    const size_t true_delay = std::max(min_size, prm.inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
 
     bool bCountNotReached = true;
 
@@ -272,7 +199,7 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
             ptr_raw_buffer[sz + 1] = 0;
         }
 
-        if (to_file) {
+        if (prm.to_file) {
             QCSP::write_to_file<std::complex<float>>("dump_file.bin", buffer);
         } else {
             QCSP::send_from_memory<std::complex<float>>(send_stream, buffer);
@@ -284,21 +211,21 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
         std::this_thread::sleep_for(wait_time);
 
-        const bool tmp_cond = ++cnt < max_count;
-        bCountNotReached    = (count_limited ? tmp_cond : true);
+        const bool tmp_cond = ++cnt < prm.max_count;
+        bCountNotReached    = (prm.count_limited ? tmp_cond : true);
     }
 
     if (!bCountNotReached) {
         std::cout << "Transmission finished." << std::endl;
     }
 
-    if (bRunning && !no_ui) {
+    if (bRunning && !prm.no_ui) {
         bRunning = false;
         pthread_cancel(ui_tid);
     }
     pthread_join(ui_tid, nullptr);
 
-    if (bTimeNotReached && time_limited) {
+    if (bTimeNotReached && prm.time_limited) {
         pthread_cancel(timer_tid);
     }
     pthread_join(timer_tid, nullptr);

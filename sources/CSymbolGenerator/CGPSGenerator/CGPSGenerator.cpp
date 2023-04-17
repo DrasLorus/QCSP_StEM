@@ -1,4 +1,4 @@
-#include "GPSGenerator.hpp"
+#include "CGPSGenerator.hpp"
 
 #include <cassert>
 

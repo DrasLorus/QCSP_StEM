@@ -1,6 +1,7 @@
 #ifndef _USRP_FUNCTIONS_HPP_
 #define _USRP_FUNCTIONS_HPP_
 
+#include "utilities/structures.hpp"
 #include <fstream>
 #include <string>
 
@@ -13,14 +14,7 @@ namespace QCSP {
 void check_usrp(uhd::device_addr_t device_args = std::string(""));
 
 void init_usrp(
-    const std::string &                           device_args,
-    const boost::program_options::variables_map & vm,
-
-    const std::string & ant,
-    double              rate,
-    double              freq,
-    double              gain,
-
+    const emitter_parameters &    prm,
     uhd::usrp::multi_usrp::sptr & emitter_usrp,
     uhd::tx_streamer::sptr &      send_stream);
 
