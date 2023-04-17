@@ -29,7 +29,6 @@
 #include <nmeaparse/nmea.h>
 #include <thread>
 
-#include "utilities/definitions.hpp"
 #include "CSymbolGenerator/CSymbolGenerator.hpp"
 
 namespace QCSP {
@@ -46,8 +45,6 @@ private:
     std::atomic<bool> running;
     const bool        use_localtime;
 
-    int * frame;
-
     float      lat;
     float      lon;
     float      raw_time;
@@ -55,23 +52,21 @@ private:
 
     uint16_t counter;
 
-    float get_latitude() const { return float(_gps->fix.latitude); }
+    float get_latitude() const { return float(this->_gps->fix.latitude); }
 
-    float get_longitude() const { return float(_gps->fix.longitude); }
+    float get_longitude() const { return float(this->_gps->fix.longitude); }
 
     void run();
-
-public:
-    static constexpr const unsigned log2gf   = _LOG2GF_;
-    static constexpr const unsigned kSymbols = _KSYMBOL_;
-
-    int launch();
     int join();
     int stop();
 
+public:
+    int launch();
+    void safe_join();
+
     virtual void process(std::vector<int> & symbols) override;
 
-    CGPSGenerator(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true);
+    CGPSGenerator(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true, bool do_lauch = true);
 
     virtual ~CGPSGenerator();
 };

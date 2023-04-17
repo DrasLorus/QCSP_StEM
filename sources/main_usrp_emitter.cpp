@@ -37,6 +37,8 @@
 #include <uhd/utils/thread.hpp>
 
 #include "CConvEngine/CHalfCorrEngine.hpp"
+#include "CQCSPModulator/CCompleteModulator/CCompleteModulator.hpp"
+#include "CQCSPModulator/CQCSPModulator.hpp"
 #include "threads/timer.hpp"
 #include "threads/user_interface.hpp"
 #include "utilities/hmi_functions.hpp"
@@ -51,37 +53,13 @@
 
 namespace po = boost::program_options;
 
-typedef enum {
-    UNKNOW,
-    RANDOM,
-    TIMER,
-    ZERO,
-    GPS
-} generator_t;
-
-generator_t gen_from_string(const std::string & in) {
-    if (in == "random") {
-        return RANDOM;
-    }
-    if (in == "timer") {
-        return TIMER;
-    }
-    if (in == "zero") {
-        return ZERO;
-    }
-    if (in == "gps") {
-        return GPS;
-    }
-    return UNKNOW;
-}
-
 template <typename Tin, typename Tout, uint32_t inSize>
 void upsample8(const Tin * __restrict in, Tout * __restrict out) {
     // constexpr uint32_t zero_padding = sizeof(Tout) * 7;
     for (uint32_t u = 0; u < inSize; u++) {
         const uint64_t up_idx = u << 3;
 
-        out[up_idx + 0] = in[u];
+        out[up_idx + 0] = Tout(in[u]);
         out[up_idx + 1] = 0;
         out[up_idx + 2] = 0;
         out[up_idx + 3] = 0;
@@ -152,13 +130,14 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     const bool no_ui = vm.count("no-ui");
 
-    const generator_t gen_type = gen_from_string(vm.at("generator").as<std::string>());
+    const QCSP::generator_t gen_type = QCSP::gen_from_string(vm.at("generator").as<std::string>());
+    const QCSP::modulator_t mod_type = QCSP::mod_from_string(vm.at("modulator").as<std::string>());
 
     uhd::usrp::multi_usrp::sptr emitter_usrp;
     uhd::tx_streamer::sptr      send_stream;
 
     const std::string gps_tty = vm.at("tty").as<std::string>();
-    if (gen_type == GPS) {
+    if (gen_type == QCSP::GEN_GPS) {
         if (FILE * test = fopen(gps_tty.c_str(), "r")) {
             fclose(test);
         } else {
@@ -178,8 +157,8 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     unsigned int                     n_frame;
     unsigned int                     n_s;
-    std::vector<int8_t>              pn;
-    std::vector<int8_t>              best_N;
+    std::vector<int>                 pn;
+    std::vector<int>                 best_N;
     std::vector<std::complex<float>> h_filter;
 
     QCSP::load_settings("../data/parameters_20210903.mat", n_frame, n_s, pn, best_N, h_filter);
@@ -190,45 +169,58 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
     std::shared_ptr<QCSP::CSymbolGenerator> generator;
     // if (vm.count("timer-generator")) {
     switch (gen_type) {
-        // case RANDOM:
+        // case QCSP::GEN_RANDOM:
         //     generator = std::make_shared<CRandomGenerator>(n_frame, n_s);
         //     break;
-        // case TIMER:
+        // case QCSP::GEN_TIMER:
         //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
         //     break;
-        // case ZERO:
+        // case QCSP::GEN_ZERO:
         //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
         //     break;
-        case GPS:
-            generator = std::make_shared<QCSP::CGPSGenerator>(pn, best_N);
+        case QCSP::GEN_GPS:
+            generator = std::make_shared<QCSP::CGPSGenerator>(gps_tty, false, true);
             break;
         default:
             std::cerr << "Error: generator type is unknown." << std::endl;
             exit(EXIT_FAILURE);
     }
 
-    const int * const gen_out_int = generator->output();
-    constexpr size_t  gen_outsize = QCSP::_NSYMBOL_ * QCSP::_GF_;
-    if (gen_outsize != generator->output_size()) {
-        std::cerr << "Error: generator->output_size() is expected to be _NSYMBOL_ * _GF_!" << std::endl;
-        exit(EXIT_FAILURE);
+    std::shared_ptr<QCSP::CQCSPModulator> modulator;
+    switch (mod_type) {
+        // case QCSP::MOD_FAKE:
+        //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
+        //     break;
+        // case QCSP::MOD_ZERO:
+        //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
+        //     break;
+        case QCSP::MOD_REAL:
+            modulator = std::make_shared<QCSP::CCompleteModulator>(pn, best_N);
+            break;
+        default:
+            std::cerr << "Error: modulator type is unknown." << std::endl;
+            exit(EXIT_FAILURE);
     }
 
-    const size_t conv_size = gen_outsize * 8 + (h_filter.size() - 1) * 2;
+    constexpr size_t qcsp_message_size = QCSP::CQCSPModulator::message_size();
+    constexpr size_t qcsp_frame_size   = QCSP::CQCSPModulator::frame_size();
+
+    const size_t conv_size = qcsp_frame_size * 8 + (h_filter.size() - 1) * 2;
 
     if (bool(file_frames)) {
         fwrite(&conv_size, sizeof(size_t), 1, file_frames);
     }
 
     QCSP::CHalfCorrEngine<float> * conv_engine;
-    ;
 
-    std::vector<int8_t> gen_char_out(gen_outsize, 0);
-    std::vector<int8_t> gen_upsp_out(conv_size, 0);
+    std::vector<int>    message(qcsp_message_size, 0);
+    std::vector<int>    qcsp_frame(qcsp_frame_size, 0);
+    std::vector<int8_t> frame_int8(qcsp_frame_size, 0);
+    std::vector<int8_t> frame_upsp_int8(conv_size, 0);
 
-    std::vector<int8_t>::iterator data_beg_upsp = gen_upsp_out.begin() + (h_filter.size() - 1);
+    std::vector<int8_t>::iterator data_beg_upsp = frame_upsp_int8.begin() + (h_filter.size() - 1);
 
-    std::vector<std::complex<float>> gen_cpx_out(conv_size, 0);
+    std::vector<std::complex<float>> frame_cpx(conv_size, 0);
     std::vector<std::complex<float>> filtered_data(conv_size, 0);
     std::vector<std::complex<float>> buffer(conv_size, 0);
 
@@ -246,15 +238,6 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     std::atomic<bool> bRunning(true);
     std::atomic<bool> bTimeNotReached(true);
-
-    QCSP::CGPSReader * gps_gen = nullptr;
-    std::vector<int>   symbols;
-    if (gen_type == GPS) {
-        symbols.resize(QCSP::_KSYMBOL_);
-        memset(symbols.data(), 0, QCSP::_KSYMBOL_ * sizeof(int));
-        gps_gen = new QCSP::CGPSReader(gps_tty, false);
-        gps_gen->launch();
-    }
 
     QCSP::ui_arg_t ui_arg = {std::ref(bRunning), no_ui};
     pthread_t      ui_tid = 0;
@@ -274,18 +257,14 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     while (bRunning && bCountNotReached && bTimeNotReached) {
 
-        if (bool(gps_gen)) {
-            gps_gen->process(symbols);
-            std::dynamic_pointer_cast<CReadTransmitter<QCSP::_KSYMBOL_, QCSP::_LOG2GF_>>(generator)->load_symbols(symbols.data());
-        }
+        generator->process(message);
+        modulator->process(message, qcsp_frame);
 
-        generator->process();
+        // std::copy(qcsp_frame.begin(), qcsp_frame.begin() + qcsp_frame_size, frame_int8.begin());
+        upsample8<int, int8_t, QCSP::_NSYMBOL_ * QCSP::_GF_>(qcsp_frame.data(), data_beg_upsp.base());
+        copy(frame_upsp_int8.begin(), frame_upsp_int8.begin() + conv_size, frame_cpx.begin());
 
-        std::copy(gen_out_int, gen_out_int + gen_outsize, gen_char_out.begin());
-        upsample8<int8_t, int8_t, QCSP::_NSYMBOL_ * QCSP::_GF_>(gen_char_out.data(), data_beg_upsp.base());
-        copy(gen_upsp_out.begin(), gen_upsp_out.begin() + conv_size, gen_cpx_out.begin());
-
-        conv_engine->process(gen_cpx_out, filtered_data);
+        conv_engine->process(frame_cpx, filtered_data);
 
         for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
             // Remove unnecessary imaginary parts introduced by FFT
@@ -323,12 +302,6 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
         pthread_cancel(timer_tid);
     }
     pthread_join(timer_tid, nullptr);
-
-    if (bool(gps_gen)) {
-        gps_gen->stop();
-        gps_gen->join();
-        delete gps_gen;
-    }
 
     delete conv_engine;
 

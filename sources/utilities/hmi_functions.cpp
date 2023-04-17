@@ -67,9 +67,11 @@ int parse_user_input(int argc, char ** argv, po::variables_map & vm) {
                                                               "The value is ceiled.")(
         "to-file", "Write to a file instead of a USRP.")(
         "save-frames", "Emit but also store frames locally")(
-        "generator", po::value<std::string>()->default_value("random"), "Set the generator used. Either 'random' (randomly generated bits),"
+        "generator", po::value<std::string>()->default_value("gps"), "Set the generator used. Either 'random' (randomly generated bits),"
                                                                         " 'timer' (to use the predictable CTimerTransmitter),"
                                                                         " 'zero' (to send only zeroes) or 'gps' (binary payload with GPS position).")(
+        "modulator", po::value<std::string>()->default_value("real"), "Set the modulator used. Either 'real' (true QCSP modulator),"
+                                                                        " or 'fake' (generate a valid frame independently of the payload).")(
         "tty", po::value<std::string>()->default_value("/dev/ttyS0"), "Set the TTY used to read GPS data. Only used with the 'gps' generator.")(
         "no-ui", "Disable the UI (program no longer cleanly stoppable by the user).")(
         "probe", "Look for all available USRP.");
@@ -119,8 +121,8 @@ void load_settings(
     const std::string &                filename,
     unsigned &                         n_frame,
     unsigned &                         n_s,
-    std::vector<int8_t> &              pn,
-    std::vector<int8_t> &              best_N,
+    std::vector<int> &                 pn,
+    std::vector<int> &                 best_N,
     std::vector<std::complex<float>> & h_filter) {
     mat_t * mat_params = Mat_Open(filename.c_str(), MAT_ACC_RDONLY);
     throw_if(mat_params == nullptr, std::runtime_error("Cannot open file " + filename));
@@ -154,7 +156,7 @@ void load_settings(
     var_p = Mat_VarRead(mat_params, "PN64");
     throw_if(mat_params == nullptr, std::runtime_error("Cannot open variable PN64"));
 
-    pn = std::vector<int8_t>((double *) var_p->data, (double *) var_p->data + var_p->dims[1]);
+    pn = std::vector<int>((double *) var_p->data, (double *) var_p->data + var_p->dims[1]);
     if (pn.size() != n_s) {
         std::cerr << "ERROR - Current PN size (" << pn.size()
                   << ") != Expected size (" << n_s << ")\n"
@@ -167,7 +169,7 @@ void load_settings(
     var_p = Mat_VarRead(mat_params, "best_N");
     throw_if(mat_params == nullptr, std::runtime_error("Cannot open variable best_N"));
 
-    best_N = std::vector<int8_t>((double *) var_p->data, (double *) var_p->data + var_p->dims[1]);
+    best_N = std::vector<int>((double *) var_p->data, (double *) var_p->data + var_p->dims[1]);
     if (best_N.size() != n_frame) {
         std::cerr << "ERROR - Current best_N size (" << best_N.size()
                   << ") != Expected size (" << n_frame << ")\n"

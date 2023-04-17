@@ -54,7 +54,10 @@ set_property (CACHE QCSP_N_SYMBOLS PROPERTY STRINGS "60")
 set (QCSP_K_SYMBOLS "20" CACHE STRING "Number of symbols in a frame (K = N * Rc)")
 set_property (CACHE QCSP_K_SYMBOLS PROPERTY STRINGS "20")
 
+set (QCSP_NBLDPC_MATID "N${QCSP_N_SYMBOLS}_K${QCSP_K_SYMBOLS}_p${QCSP_GF_ORDER}" CACHE INTERNAL "Varable used to select the right constant headers." FORCE)
+
 configure_file (sources/utilities/definitions.hpp.in ${CMAKE_SOURCE_DIR}/sources/utilities/definitions.hpp @ONLY)
+configure_file (sources/CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp.in ${CMAKE_SOURCE_DIR}/sources/CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp @ONLY)
 
 add_executable (
   emitter_usrp
@@ -64,6 +67,8 @@ add_executable (
   sources/utilities/hmi_functions.cpp
   sources/utilities/usrp_functions.cpp
   sources/CFftEngine/CFftComplexEngine.cpp
+  sources/CSymbolGenerator/CSymbolGenerator.cpp
+  sources/CQCSPModulator/CQCSPModulator.cpp
   sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
 )
 target_include_directories (emitter_usrp PUBLIC sources)

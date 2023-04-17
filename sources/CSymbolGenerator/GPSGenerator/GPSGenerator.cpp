@@ -2,59 +2,62 @@
 
 #include <cassert>
 
-QCSP::CGPSGenerator::CGPSGenerator(const std::string & tty_gps, bool localtime)
+QCSP::CGPSGenerator::CGPSGenerator(const std::string & tty_gps, bool localtime, bool do_lauch)
     : _tty_path(tty_gps),
       use_localtime(localtime),
       running(false),
       m_frame(),
       counter(0) {
-    _parser      = new nmea::NMEAParser;
-    _gps         = new nmea::GPSService(*_parser);
-    _parser->log = false;
+    this->_parser      = new nmea::NMEAParser;
+    this->_gps         = new nmea::GPSService(*(this->_parser));
+    this->_parser->log = false;
 
-    _gps->onLockStateChanged += [](bool is_fixed) {
+    this->_gps->onLockStateChanged += [](bool is_fixed) {
         std::cout << (is_fixed ? std::string("Fix found!") : std::string("Fix lost...")) << std::endl;
     };
 
-    _gps->onUpdate += [this] {
-        const float loc_lon  = _gps->fix.locked() ? float(_gps->fix.longitude) : 0.f;
-        const float loc_lat  = _gps->fix.locked() ? float(_gps->fix.latitude) : 0.f;
-        const float loc_time = _gps->fix.locked() ? float(_gps->fix.timestamp.rawTime) : 0.f;
+    this->_gps->onUpdate += [this] {
+        const float loc_lon  = this->_gps->fix.locked() ? float(this->_gps->fix.longitude) : 0.f;
+        const float loc_lat  = this->_gps->fix.locked() ? float(this->_gps->fix.latitude) : 0.f;
+        const float loc_time = this->_gps->fix.locked() ? float(this->_gps->fix.timestamp.rawTime) : 0.f;
 
 #if defined(DEBUG) && VERBOSE > 1
         cout << (_gps->fix.locked() ? "[*] " : "[ ] ") << loc_lat << " N " << loc_lon << " E" << endl;
 #endif
 
-        std::unique_lock<std::mutex> lk_frame(m_frame);
+        std::unique_lock<std::mutex> lk_frame(this->m_frame);
 
-        lon      = loc_lon;
-        lat      = loc_lat;
-        raw_time = loc_time;
+        this->lon      = loc_lon;
+        this->lat      = loc_lat;
+        this->raw_time = loc_time;
 
         lk_frame.unlock();
     };
 
-    _tty_gps.open(_tty_path);
+    this->_tty_gps.open(_tty_path);
 
-    frame = new int[kSymbols];
-    std::memset(frame, 0, kSymbols * sizeof(int));
+    if (do_lauch) {
+        this->launch();
+    }
 }
 
 QCSP::CGPSGenerator::~CGPSGenerator() {
-    _tty_gps.close();
-    delete _gps;
-    delete _parser;
+    if (this->stop() == EXIT_SUCCESS) {
+        _t->join();
+    }
 
-    delete[] frame;
+    this->_tty_gps.close();
+    delete this->_gps;
+    delete this->_parser;
 }
 
 void QCSP::CGPSGenerator::run() {
-    while (running.load()) {
+    while (this->running.load()) {
         std::string line;
-        getline(_tty_gps, line);
+        getline(this->_tty_gps, line);
 
         try {
-            _parser->readLine(line);
+            this->_parser->readLine(line);
         } catch (nmea::NMEAParseError & e) {
             std::cerr << e.what() << std::endl;
         }
@@ -76,7 +79,7 @@ time_struct convert_time(uint8_t hours, uint8_t minutes, uint8_t seconds, uint8_
                          | ((minutes & 0x3F) << 6)
                          | (seconds & 0x3F);
 
-    // p cccccccc => 1 + 7 = 8 bits
+    // CSymbolGenerator::p cccccccc => 1 + 7 = 8 bits
     const uint8_t p12_cs = plus_12
                          | (cents & 0x7f);
 
@@ -124,18 +127,18 @@ struct time_struct get_gps_time(float raw_time) {
 
 void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
 
-    const uint16_t curr_counter = counter++;
+    const uint16_t curr_counter = this->counter++;
 
     std::ifstream tempf("/sys/class/thermal/thermal_zone0/temp");
     std::string   tempstr;
     getline(tempf, tempstr);
-    const uint16_t temperature = stoul(tempstr) >> 1;
+    const uint16_t temperature = std::stoul(tempstr) >> 1;
 
-    std::unique_lock<std::mutex> lk_frame(m_frame);
+    std::unique_lock<std::mutex> lk_frame(this->m_frame);
 
-    const float loc_lon  = lon;
-    const float loc_lat  = lat;
-    const float loc_time = raw_time;
+    const float loc_lon  = this->lon;
+    const float loc_lat  = this->lat;
+    const float loc_time = this->raw_time;
 
     lk_frame.unlock();
 
@@ -157,41 +160,41 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
     memcpy(bytes + 13, &curr_counter, sizeof(uint16_t));
     // clang-format on
 
-    memset(symbols.data(), 0, kSymbols * sizeof(int));
+    memset(symbols.data(), 0, CSymbolGenerator::K * sizeof(int));
 
-    constexpr uint8_t lowMask = (1U << std::min(log2gf, 8U)) - 1U;
+    constexpr uint8_t lowMask = (1U << std::min(CSymbolGenerator::p, 8U)) - 1U;
 
     unsigned i           = 0;
-    unsigned bitsToWrite = log2gf;
+    unsigned bitsToWrite = CSymbolGenerator::p;
     for (unsigned charCnt = 0; charCnt < 15; charCnt++) {
         const uint8_t toWrite = bytes[charCnt];
 
         uint8_t rem = 8;
-        assert(i < kSymbols);
+        assert(i < CSymbolGenerator::K);
         while (rem >= bitsToWrite) {
             const uint8_t bitOffset = rem - bitsToWrite;
             const uint8_t mask      = uint8_t(lowMask) << bitOffset;
 
             symbols[i] += int((toWrite & mask) >> bitOffset);
-            assert(symbols[i] < (1 << log2gf));
+            assert(symbols[i] < (1 << CSymbolGenerator::p));
             i++;
 
-            bitsToWrite = log2gf; // New symbols[i] need full symbol
+            bitsToWrite = CSymbolGenerator::p; // New symbols[i] need full symbol
             rem         = bitOffset;
         }
 
         if (rem != 0) {
-            const uint8_t offset = log2gf - rem;
+            const uint8_t offset = CSymbolGenerator::p - rem;
             const uint8_t mask   = (1U << rem) - 1U;
 
             symbols[i] = int((toWrite & mask) << offset);
-            assert(symbols[i] < (1 << log2gf));
+            assert(symbols[i] < (1 << CSymbolGenerator::p));
             bitsToWrite = offset;
         }
     }
 
 #if defined(DEBUG) && VERBOSE > 1
-    constexpr uint8_t bytes_in_frame = log2gf * kSymbols / 8;
+    constexpr uint8_t bytes_in_frame = CSymbolGenerator::p * CSymbolGenerator::K / 8;
     printf("%10.5f N %10.5f W %02d:%02d:%02d.%02d %05ddeg no %05d\n",
            loc_lat,
            loc_lon,
@@ -215,22 +218,22 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
         printf(" %02x", bytes[i]);
     }
     cout << endl;
-    for (unsigned i = 0; i < kSymbols; i++) {
+    for (unsigned i = 0; i < CSymbolGenerator::K; i++) {
         printf("    %02x ", symbols[i]);
     }
     cout << endl;
 #if VERBOSE > 2
-    bool check_bits[log2gf * kSymbols];
-    for (unsigned i = 0; i < kSymbols; i++) {
-        for (unsigned j = 0; j < log2gf; j++) {
-            const uint8_t mask         = 1 << (log2gf - 1 - j);
-            check_bits[i * log2gf + j] = (symbols[i] & mask) == mask;
+    bool check_bits[CSymbolGenerator::p * CSymbolGenerator::K];
+    for (unsigned i = 0; i < CSymbolGenerator::K; i++) {
+        for (unsigned j = 0; j < CSymbolGenerator::p; j++) {
+            const uint8_t mask                      = 1 << (CSymbolGenerator::p - 1 - j);
+            check_bits[i * CSymbolGenerator::p + j] = (symbols[i] & mask) == mask;
         }
     }
 
-    for (unsigned i = 0; i < log2gf * kSymbols; i++) {
+    for (unsigned i = 0; i < CSymbolGenerator::p * CSymbolGenerator::K; i++) {
         printf("%01u", check_bits[i]);
-        if ((i + 1) % log2gf == 0) {
+        if ((i + 1) % CSymbolGenerator::p == 0) {
             printf(" ");
         }
     }
@@ -259,21 +262,31 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
 }
 
 int QCSP::CGPSGenerator::launch() {
-    running = true;
-    _t      = new std::thread(&QCSP::CGPSGenerator::run, this);
+    this->running = true;
+    this->_t      = new std::thread(&QCSP::CGPSGenerator::run, this);
     return EXIT_SUCCESS;
 }
 
 int QCSP::CGPSGenerator::join() {
-    if (running || !(_t->joinable())) {
+    if (this->running || !(_t->joinable())) {
         return EXIT_FAILURE;
     }
 
-    _t->join();
+    this->_t->join();
     return EXIT_SUCCESS;
 }
 
 int QCSP::CGPSGenerator::stop() {
     running = false;
-    return _t->joinable() ? EXIT_SUCCESS : EXIT_FAILURE;
+    return this->_t->joinable() ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+void QCSP::CGPSGenerator::safe_join() {
+    if (this->join() == EXIT_FAILURE) {
+        if (this->stop() == EXIT_FAILURE) {
+            std::cerr << "[ERROR] GPS thread is not joinable." << std::endl;
+        } else {
+            this->_t->join();
+        }
+    }
 }

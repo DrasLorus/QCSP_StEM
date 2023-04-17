@@ -13,8 +13,8 @@ void load_settings(
     const std::string &                filename,
     unsigned &                         n_frame,
     unsigned &                         n_s,
-    std::vector<int8_t> &              pn,
-    std::vector<int8_t> &              best_N,
+    std::vector<int> &                 pn,
+    std::vector<int> &                 best_N,
     std::vector<std::complex<float>> & h_filter);
 
 } // namespace QCSP

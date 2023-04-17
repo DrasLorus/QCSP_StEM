@@ -1,0 +1,16 @@
+#ifndef _QCSP_NBLDPC_MATRICES_HPP_
+#define _QCSP_NBLDPC_MATRICES_HPP_
+
+/** NOTE - Why suppressing warnings
+ * These headers are not used directly but must be as-is, for the configuration mechanism to work.
+ */
+
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/GF/GF.hpp"     // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/GF/GF_ADD.hpp" // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/GF/GF_DIV.hpp" // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/GF/GF_MUL.hpp" // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/constants.hpp" // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/encoder.hpp"   // IWYU pragma: keep
+#include "CQCSPModulator/NBLDPC_Matrices/@QCSP_NBLDPC_MATID@/hlayered.hpp"  // IWYU pragma: keep
+
+#endif // _QCSP_NBLDPC_MATRICES_HPP_
