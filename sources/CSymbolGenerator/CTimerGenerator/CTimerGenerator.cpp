@@ -51,12 +51,13 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
     namespace ch = std::chrono;
     using clk    = ch::system_clock;
 
-    constexpr const unsigned message_bit_size  = CSymbolGenerator::message_size();
+    constexpr const unsigned message_bit_size = CSymbolGenerator::message_size()
+                                              * CSymbolGenerator::symbol_size();
     constexpr const unsigned message_byte_size = message_bit_size / 8;
-    constexpr const bool     more_two_bytes    = CSymbolGenerator::p > 8;
+    constexpr const bool     more_two_bytes    = CSymbolGenerator::symbol_size() > 8;
 
-    //  const uint8_t high_mask = (1U << unsigned(std::max(0, int(CSymbolGenerator::p) - 8))) - 1U;
-    constexpr uint8_t low_mask = (1U << std::min(CSymbolGenerator::p, 8U)) - 1U;
+    // constexpr uint8_t high_mask = (1U << std::max(0, CSymbolGenerator::symbol_size() - 8U)) - 1U;
+    constexpr uint8_t low_mask = (1U << std::min(CSymbolGenerator::symbol_size(), 8U)) - 1U;
 
     int * const src = message.data();
     memset(src, 0, CSymbolGenerator::K * sizeof(int));
@@ -75,7 +76,7 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
 
     const std::string to_send = std::string(counter_str) + std::string(time_str) + ARCH_STR;
     if (to_send.size() > message_byte_size) {
-        std::cerr << "[Warning] string is too long." << std::endl;
+        std::cerr << "[Warning] string '" << to_send << "' is too long." << std::endl;
     }
     const char * char_to_send = to_send.c_str();
 
@@ -84,7 +85,7 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
         exit(EXIT_FAILURE);
     } else {
         unsigned i             = 0;
-        unsigned bits_to_write = CSymbolGenerator::p;
+        unsigned bits_to_write = CSymbolGenerator::symbol_size();
         for (unsigned char_cnt = 0; char_cnt < message_byte_size; char_cnt++) {
             const uint8_t to_write = char_to_send[char_cnt];
 
@@ -96,12 +97,12 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
 
                 src[i++] += int((to_write & mask) >> bit_offset);
 
-                bits_to_write = CSymbolGenerator::p; // New src[i] need full symbol
+                bits_to_write = CSymbolGenerator::symbol_size(); // New src[i] need full symbol
                 rem           = bit_offset;
             }
 
             if (rem != 0) {
-                const uint8_t offset = CSymbolGenerator::p - rem;
+                const uint8_t offset = CSymbolGenerator::symbol_size() - rem;
                 const uint8_t mask   = (1U << rem) - 1U;
 
                 src[i]        = int((to_write & mask) << offset);
