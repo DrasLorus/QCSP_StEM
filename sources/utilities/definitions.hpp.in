@@ -1,0 +1,13 @@
+#ifndef _DEFINITIONS_HPP_
+#define _DEFINITIONS_HPP_
+
+namespace QCSP {
+
+constexpr const unsigned _LOG2GF_  = @QCSP_GF_ORDER@;
+constexpr const unsigned _GF_      = 1 << 6;
+constexpr const unsigned _NSYMBOL_ = @QCSP_N_SYMBOLS@;
+constexpr const unsigned _KSYMBOL_ = @QCSP_K_SYMBOLS@;
+
+} // namespace QCSP
+
+#endif

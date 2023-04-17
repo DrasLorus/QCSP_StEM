@@ -45,7 +45,7 @@
 // #include "00-Common/CFftwWrapper/CFftwWrapper.hpp"
 // #include "CFaLNWrapper/CFaLNTransmitter.hpp"
 
-#include "CSymbolGenerator/GPSGenerator/GPSReader.hpp"
+#include "CSymbolGenerator/GPSGenerator/GPSGenerator.hpp"
 
 // using FaLN_X::CFrame;
 
@@ -187,20 +187,20 @@ int UHD_SAFE_MAIN(int argc, char ** argv) {
 
     // val = [zeros(1, 88), kron((randi([0, 1], 1, 60*64) .* 2 - 1), [1 0 0 0 0 0 0 0]) , zeros(1,88)]
 
-    std::shared_ptr<CFaLNTransmitterBase> generator;
+    std::shared_ptr<QCSP::CSymbolGenerator> generator;
     // if (vm.count("timer-generator")) {
     switch (gen_type) {
-        case RANDOM:
-            generator = std::make_shared<CRealTransmitter>(pn, best_N);
-            break;
-        case TIMER:
-            generator = std::make_shared<CTimeTransmitter>(pn, best_N);
-            break;
-        case ZERO:
-            generator = std::make_shared<CZeroTransmitter>(pn, best_N);
-            break;
+        // case RANDOM:
+        //     generator = std::make_shared<CRandomGenerator>(n_frame, n_s);
+        //     break;
+        // case TIMER:
+        //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
+        //     break;
+        // case ZERO:
+        //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
+        //     break;
         case GPS:
-            generator = std::make_shared<CReadTransmitter<QCSP::_KSYMBOL_, QCSP::_LOG2GF_>>(pn, best_N);
+            generator = std::make_shared<QCSP::CGPSGenerator>(pn, best_N);
             break;
         default:
             std::cerr << "Error: generator type is unknown." << std::endl;

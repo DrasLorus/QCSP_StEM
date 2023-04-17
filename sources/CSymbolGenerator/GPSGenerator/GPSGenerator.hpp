@@ -34,7 +34,7 @@
 
 namespace QCSP {
 
-class CGPSReader : public CSymbolGenerator {
+class CGPSGenerator : public CSymbolGenerator {
 private:
     nmea::NMEAParser * _parser;
     nmea::GPSService * _gps;
@@ -71,9 +71,9 @@ public:
 
     virtual void process(std::vector<int> & symbols) override;
 
-    CGPSReader(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true);
+    CGPSGenerator(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true);
 
-    virtual ~CGPSReader();
+    virtual ~CGPSGenerator();
 };
 
 } // namespace QCSP

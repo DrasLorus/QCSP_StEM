@@ -1,11 +1,8 @@
-#include "GPSReader.hpp"
+#include "GPSGenerator.hpp"
 
 #include <cassert>
 
-using namespace QCSP;
-using namespace std;
-
-CGPSReader::CGPSReader(const std::string & tty_gps, bool localtime)
+QCSP::CGPSGenerator::CGPSGenerator(const std::string & tty_gps, bool localtime)
     : _tty_path(tty_gps),
       use_localtime(localtime),
       running(false),
@@ -43,7 +40,7 @@ CGPSReader::CGPSReader(const std::string & tty_gps, bool localtime)
     std::memset(frame, 0, kSymbols * sizeof(int));
 }
 
-CGPSReader::~CGPSReader() {
+QCSP::CGPSGenerator::~CGPSGenerator() {
     _tty_gps.close();
     delete _gps;
     delete _parser;
@@ -51,15 +48,15 @@ CGPSReader::~CGPSReader() {
     delete[] frame;
 }
 
-void CGPSReader::run() {
+void QCSP::CGPSGenerator::run() {
     while (running.load()) {
-        string line;
+        std::string line;
         getline(_tty_gps, line);
 
         try {
             _parser->readLine(line);
         } catch (nmea::NMEAParseError & e) {
-            cerr << e.what() << endl;
+            std::cerr << e.what() << std::endl;
         }
     }
 }
@@ -101,13 +98,13 @@ time_struct get_local_time() {
     const uint8_t  cents       = uint8_t((milsecs_now - seconds_now * 1000) / 10);
 
     strftime(timeStr, tmStrSize, "%H", std::localtime(&t_c));
-    const uint8_t hours = stoul(timeStr);
+    const uint8_t hours = std::stoul(timeStr);
 
     strftime(timeStr, tmStrSize, "%M", std::localtime(&t_c));
-    const uint8_t minutes = stoul(timeStr);
+    const uint8_t minutes = std::stoul(timeStr);
 
     strftime(timeStr, tmStrSize, "%S", std::localtime(&t_c));
-    const uint8_t seconds = stoul(timeStr);
+    const uint8_t seconds = std::stoul(timeStr);
 
     return convert_time(hours, minutes, seconds, cents);
 }
@@ -125,12 +122,12 @@ struct time_struct get_gps_time(float raw_time) {
 
 } // namespace
 
-void CGPSReader::process(std::vector<int> & symbols) {
+void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
 
     const uint16_t curr_counter = counter++;
 
-    ifstream tempf("/sys/class/thermal/thermal_zone0/temp");
-    string   tempstr;
+    std::ifstream tempf("/sys/class/thermal/thermal_zone0/temp");
+    std::string   tempstr;
     getline(tempf, tempstr);
     const uint16_t temperature = stoul(tempstr) >> 1;
 
@@ -191,8 +188,6 @@ void CGPSReader::process(std::vector<int> & symbols) {
             assert(symbols[i] < (1 << log2gf));
             bitsToWrite = offset;
         }
-
-        assert(symbols[i] < (1 << log2gf));
     }
 
 #if defined(DEBUG) && VERBOSE > 1
@@ -263,13 +258,13 @@ void CGPSReader::process(std::vector<int> & symbols) {
 #endif
 }
 
-int CGPSReader::launch() {
+int QCSP::CGPSGenerator::launch() {
     running = true;
-    _t      = new thread(&CGPSReader::run, this);
+    _t      = new std::thread(&QCSP::CGPSGenerator::run, this);
     return EXIT_SUCCESS;
 }
 
-int CGPSReader::join() {
+int QCSP::CGPSGenerator::join() {
     if (running || !(_t->joinable())) {
         return EXIT_FAILURE;
     }
@@ -278,7 +273,7 @@ int CGPSReader::join() {
     return EXIT_SUCCESS;
 }
 
-int CGPSReader::stop() {
+int QCSP::CGPSGenerator::stop() {
     running = false;
     return _t->joinable() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

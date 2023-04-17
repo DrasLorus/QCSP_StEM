@@ -64,3 +64,4 @@ _deps
 
 # Build Artifacts
 build
+sources/utilities/definitions.hpp

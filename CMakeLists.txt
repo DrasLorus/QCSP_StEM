@@ -45,6 +45,17 @@ if (ENABLE_TESTING)
   find_package (Catch2 REQUIRED)
 endif ()
 
+set (QCSP_GF_ORDER "6" CACHE STRING "Order of the Galois Field and bits per symbol (p = log2(q))")
+set_property (CACHE QCSP_GF_ORDER PROPERTY STRINGS "6")
+
+set (QCSP_N_SYMBOLS "60" CACHE STRING "Number of symbols in a frame (N = K / Rc)")
+set_property (CACHE QCSP_N_SYMBOLS PROPERTY STRINGS "60")
+
+set (QCSP_K_SYMBOLS "20" CACHE STRING "Number of symbols in a frame (K = N * Rc)")
+set_property (CACHE QCSP_K_SYMBOLS PROPERTY STRINGS "20")
+
+configure_file (sources/utilities/definitions.hpp.in ${CMAKE_SOURCE_DIR}/sources/utilities/definitions.hpp @ONLY)
+
 add_executable (
   emitter_usrp
   sources/main_usrp_emitter.cpp
@@ -68,7 +79,7 @@ target_link_libraries (
 )
 
 if (ENABLE_NEMATODE)
-  target_sources (emitter_usrp PRIVATE sources/CSymbolGenerator/GPSGenerator/GPSReader.cpp)
+  target_sources (emitter_usrp PRIVATE sources/CSymbolGenerator/GPSGenerator/GPSGenerator.cpp)
   target_include_directories (emitter_usrp SYSTEM PRIVATE gps-nematode/include)
   target_link_libraries (emitter_usrp PRIVATE NemaTode)
 endif ()
