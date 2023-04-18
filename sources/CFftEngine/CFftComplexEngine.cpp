@@ -64,8 +64,9 @@ void QCSP::CIfftEngine<std::complex<float>>::process(const complex_vector & inpu
     fftwf_execute(plan_ifft);
 
     real_t * out = (real_t *) output.data();
+
     for (int i = 0; i < fft_size * 2; i++) {
-        out[i] = *((real_t *) ptr_out) / real_t(fft_size);
+        out[i] = ((real_t *) ptr_out)[i];
     }
 }
 
@@ -135,7 +136,7 @@ void QCSP::CIfftEngine<std::complex<double>>::process(const complex_vector & inp
 
     real_t * out = (real_t *) output.data();
     for (int i = 0; i < fft_size * 2; i++) {
-        out[i] = *((real_t *) ptr_out) / real_t(fft_size);
+        out[i] = ((real_t *) ptr_out)[i];
     }
 }
 

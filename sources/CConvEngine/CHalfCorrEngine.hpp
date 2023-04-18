@@ -41,10 +41,10 @@ public:
 
         fft_engine.process(input, interm0);
 
-        for (int ri = 0; ri < (size() << 1); ri+=2) {
+        for (int ri = 0; ri < (size() << 1); ri += 2) {
             const size_t ii = ri + 1;
-            ptr_i1[ri] = ptr_i0[ri] * ptr_op[ri] - ptr_i0[ii] * ptr_op[ii];
-            ptr_i1[ii] = ptr_i0[ri] * ptr_op[ii] + ptr_i0[ii] * ptr_op[ri];
+            ptr_i1[ri]      = ptr_i0[ri] * ptr_op[ri] - ptr_i0[ii] * ptr_op[ii];
+            ptr_i1[ii]      = ptr_i0[ri] * ptr_op[ii] + ptr_i0[ii] * ptr_op[ri];
         }
 
         ifft_engine.process(interm1, output);

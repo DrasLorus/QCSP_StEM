@@ -1,6 +1,6 @@
 #include <atomic>
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 #include <uhd/utils/thread.hpp>
 
@@ -40,4 +40,4 @@ void * timer_run(void * arg) {
     return nullptr;
 }
 
-}
+} // namespace QCSP

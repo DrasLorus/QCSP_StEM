@@ -89,12 +89,8 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     std::vector<std::complex<float>> h_filter;
 
     QCSP::load_settings("../data/parameters_20210903.mat", n_frame, n_s, pn, best_N, h_filter);
-    // CFrame frame(n_frame, _KSYMBOL_, _LOG2GF_, 1, pn.size());
-
-    // val = [zeros(1, 88), kron((randi([0, 1], 1, 60*64) .* 2 - 1), [1 0 0 0 0 0 0 0]) , zeros(1,88)]
 
     std::shared_ptr<QCSP::CSymbolGenerator> generator;
-    // if (vm.count("timer-generator")) {
     switch (prm.gen_type) {
         // case QCSP::GEN_RANDOM:
         //     generator = std::make_shared<CRandomGenerator>(n_frame, n_s);
@@ -142,7 +138,6 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::vector<int>    message(qcsp_message_size, 0);
     std::vector<int>    qcsp_frame(qcsp_frame_size, 0);
-    std::vector<int8_t> frame_int8(qcsp_frame_size, 0);
     std::vector<int8_t> frame_upsp_int8(conv_size, 0);
 
     std::vector<int8_t>::iterator data_beg_upsp = frame_upsp_int8.begin() + (h_filter.size() - 1);
@@ -187,6 +182,11 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         generator->process(message);
         modulator->process(message, qcsp_frame);
 
+        // std::cout << std::endl;
+        // for (int i = 0; i < qcsp_frame_size; i++)
+        // 	std::cout << qcsp_frame[i] << " ";
+        // std::cout << std::endl;
+
         // std::copy(qcsp_frame.begin(), qcsp_frame.begin() + qcsp_frame_size, frame_int8.begin());
         upsample8<int, int8_t, QCSP::_NSYMBOL_ * QCSP::_GF_>(qcsp_frame.data(), data_beg_upsp.base());
         copy(frame_upsp_int8.begin(), frame_upsp_int8.begin() + conv_size, frame_cpx.begin());
@@ -194,8 +194,9 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         conv_engine->process(frame_cpx, filtered_data);
 
         for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
-            // Remove unnecessary imaginary parts introduced by FFT
-            ptr_raw_buffer[sz]     = ptr_raw_fdata[sz];
+            static const float scaling = 5.f / float(conv_size);
+            // Remove unnecessary imaginary parts introduced by FFT and add scaling
+            ptr_raw_buffer[sz]     = ptr_raw_fdata[sz] * scaling;
             ptr_raw_buffer[sz + 1] = 0;
         }
 

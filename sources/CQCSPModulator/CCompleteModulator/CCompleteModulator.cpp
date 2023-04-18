@@ -39,7 +39,7 @@ void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vec
     std::memset((NSYMB + CQCSPModulator::K), 0, M * sizeof(int));
 
     int cnt = 0;
-    for (int j = K; j < CQCSPModulator::N; j++) {
+    for (int j = CQCSPModulator::K; j < CQCSPModulator::N; j++) {
         for (int i = 0; i < CQCSPModulator::K; i++) {
             const int alpha = QCSP::GF_ENC[cnt][i];
             if (alpha != 0) {

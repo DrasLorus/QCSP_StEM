@@ -22,7 +22,7 @@ QCSP::CGPSGenerator::CGPSGenerator(const std::string & tty_gps, bool localtime, 
         const float loc_time = this->_gps->fix.locked() ? float(this->_gps->fix.timestamp.rawTime) : 0.f;
 
 #if defined(DEBUG) && VERBOSE > 1
-        cout << (_gps->fix.locked() ? "[*] " : "[ ] ") << loc_lat << " N " << loc_lon << " E" << endl;
+        std::cout << (_gps->fix.locked() ? "[*] " : "[ ] ") << loc_lat << " N " << loc_lon << " E" << std::endl;
 #endif
 
         std::unique_lock<std::mutex> lk_frame(this->m_frame);
@@ -42,9 +42,12 @@ QCSP::CGPSGenerator::CGPSGenerator(const std::string & tty_gps, bool localtime, 
 }
 
 QCSP::CGPSGenerator::~CGPSGenerator() {
-    if (this->stop() == EXIT_SUCCESS) {
-        _t->join();
-    }
+    this->stop();
+
+    // Use pthread API to cancel thread, in case it is block reading the tty.
+    pthread_t tid = this->_t->native_handle();
+    pthread_cancel(tid);
+    pthread_join(tid, nullptr);
 
     this->_tty_gps.close();
     delete this->_gps;
@@ -283,6 +286,7 @@ int QCSP::CGPSGenerator::stop() {
 
 void QCSP::CGPSGenerator::safe_join() {
     if (this->join() == EXIT_FAILURE) {
+        printf("yolo\n");
         if (this->stop() == EXIT_FAILURE) {
             std::cerr << "[ERROR] GPS thread is not joinable." << std::endl;
         } else {

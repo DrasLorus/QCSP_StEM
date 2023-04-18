@@ -5,9 +5,9 @@
 
 #include <boost/program_options/variables_map.hpp>
 
-#include "utilities/structures.hpp"
 #include "CQCSPModulator/CQCSPModulator.hpp"
 #include "CSymbolGenerator/CSymbolGenerator.hpp"
+#include "utilities/structures.hpp"
 
 namespace QCSP {
 

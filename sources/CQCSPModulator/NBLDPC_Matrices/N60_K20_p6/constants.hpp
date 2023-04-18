@@ -4,9 +4,9 @@
  * @brief NB-LDPC constants file for N60 K20 p6 (i.e., q64) DON'T INCLUDE DIRECTLY
  * @version 0.1
  * @date 2023-04-17
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  * @details This file defines NB-LDPC constants for N = 60, K = 20, and p = 6 (i.e., q = 64).
  * You shall not include this file directly. You have to use the 'configure_file' mechanism of cmake,
  * thus including the generated 'nbldpc_matrices.hpp' in the parent directory ('CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp').

@@ -76,8 +76,8 @@ using p_usrp_t = uhd::usrp::multi_usrp::sptr;
 using p_tx_t   = uhd::tx_streamer::sptr;
 
 void init_usrp(const emitter_parameters & prm,
-               p_usrp_t &          emitter_usrp,
-               p_tx_t &            send_stream) {
+               p_usrp_t &                 emitter_usrp,
+               p_tx_t &                   send_stream) {
     emitter_usrp = uhd::usrp::multi_usrp::make(prm.device_args);
 
     if (prm.has_clock_source) {

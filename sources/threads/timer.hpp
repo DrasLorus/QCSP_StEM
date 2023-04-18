@@ -13,6 +13,6 @@ typedef struct {
 
 void * timer_run(void * arg);
 
-}
+} // namespace QCSP
 
 #endif // _TIMER_HPP_

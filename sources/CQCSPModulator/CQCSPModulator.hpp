@@ -20,44 +20,43 @@ public:
 
     /**
      * @brief get size of the message in symbols
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t message_size() { return K; }
 
     /**
      * @brief  get size of a symbol in bits
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t symbol_size() { return p; }
 
     /**
      * @brief  get size of a codeword in symbols
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t codeword_size() { return N; }
 
     /**
      * @brief  get size of the pn sequence in chips
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t pn_size() { return q; }
 
-
     /**
      * @brief  get size of the overmodulation sequence in bits
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t om_size() { return N; }
 
     /**
      * @brief  get size of the output frame in chips
-     * 
-     * @return constexpr std::size_t 
+     *
+     * @return constexpr std::size_t
      */
     static constexpr std::size_t frame_size() { return N * q; }
 

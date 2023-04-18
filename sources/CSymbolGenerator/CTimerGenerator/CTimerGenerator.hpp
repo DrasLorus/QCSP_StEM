@@ -25,7 +25,7 @@ namespace QCSP {
 
 class CTimerGenerator : public CSymbolGenerator {
 private:
-    uint16_t       counter;
+    uint16_t counter;
 
 public:
     CTimerGenerator();

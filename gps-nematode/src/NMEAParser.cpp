@@ -167,7 +167,7 @@ void NMEAParser::readBuffer(uint8_t * b, uint32_t size) {
 
 /* Modification by Camille Monière */
 void NMEAParser::readLine(string cmd) {
-#if defined(_WIN32_) || defined(_WIN32) || defined(_WIN64) ||  defined(_WIN64_)
+#if defined(_WIN32_) || defined(_WIN32) || defined(_WIN64) || defined(_WIN64_)
     cmd += "\r\n";
 #else
     cmd += "\n";

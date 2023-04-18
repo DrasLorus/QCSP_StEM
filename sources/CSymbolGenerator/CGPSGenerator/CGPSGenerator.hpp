@@ -1,14 +1,13 @@
 /**
  * @file CGPSGenerator.hpp
  * @author Camille Monière (camille.moniere@univ-ubs.fr)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-04-17
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
-
 
 #ifndef _QCSP_GPS_GENERATOR_HPP_
 #define _QCSP_GPS_GENERATOR_HPP_
@@ -49,11 +48,11 @@ private:
     float get_longitude() const { return float(this->_gps->fix.longitude); }
 
     void run();
-    int join();
-    int stop();
+    int  join();
+    int  stop();
 
 public:
-    int launch();
+    int  launch();
     void safe_join();
 
     virtual void process(std::vector<int> & symbols) override;

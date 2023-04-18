@@ -31,7 +31,7 @@ int main(int argc, char ** argv) {
                                                                 "N, "
              << gps.fix.longitude << "\xF8 "
                                      "E"
-             << "  " << gps.fix.timeSinceLastUpdate().count() << "s " ;
+             << "  " << gps.fix.timeSinceLastUpdate().count() << "s ";
         cout << "+/- " << setprecision(1) << gps.fix.horizontalAccuracy() << "m  ";
         cout << endl;
     };
