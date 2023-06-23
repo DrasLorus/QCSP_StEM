@@ -7,9 +7,9 @@ QCSP::generator_t QCSP::gen_from_string(const std::string & in) {
     if (in == "timer") {
         return GEN_TIMER;
     }
-    // if (in == "zero") {
-    //     return ZERO;
-    // }
+    if (in == "zero") {
+        return GEN_ZERO;
+    }
     if (in == "gps") {
         return GEN_GPS;
     }

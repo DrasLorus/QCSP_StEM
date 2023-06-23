@@ -9,7 +9,7 @@ typedef enum {
     GEN_UNKNOW,
     // GEN_RANDOM,
     GEN_TIMER,
-    // GEN_ZERO,
+    GEN_ZERO,
     GEN_GPS
 } generator_t;
 

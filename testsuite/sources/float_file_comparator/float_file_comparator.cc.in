@@ -1,0 +1,75 @@
+#include <cmath>
+#include <cstdio>
+#include <iostream>
+#include <vector>
+
+static constexpr unsigned max_chunk_size = (64 * 60 * 8 + 88) * 4;
+
+template <unsigned TSize>
+int comparison(float * __restrict a, float * __restrict b) {
+    int errors = 0;
+    for (unsigned u = 0; u < TSize; u++) {
+        errors += int(std::abs(a[u] - b[u]) > 1e-6f);
+    }
+    return errors;
+}
+
+int main(int argc, char * argv[]) {
+    if (argc != 1) {
+        std::cerr << "Error : No argument allowed."
+                  << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Test binary: " << argv[0] << std::endl;
+
+    FILE * file_result   = fopen("@LOCAL_RESULT_FILE@", "rb");
+    FILE * file_expected = fopen("@LOCAL_OUTPUT_FILE@", "rb");
+
+    if (file_result == NULL) {
+        perror(argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    if (file_expected == NULL) {
+        perror(argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<float> result(max_chunk_size, 0);
+    std::vector<float> expected(max_chunk_size, 0);
+
+    while (!(feof(file_result) || feof(file_expected))) {
+        int result_read   = fread((void *) result.data(),
+                                  sizeof(float),
+                                  max_chunk_size,
+                                  file_result);
+        int expected_read = fread((void *) expected.data(),
+                                  sizeof(float),
+                                  max_chunk_size,
+                                  file_expected);
+
+        if (result_read != expected_read) {
+            std::cout << "  Failure: Read file chunks differ in sizes.\n"
+                      << "  Got " << result_read << " while expecting " << expected_read << std::endl;
+            return 1;
+        }
+
+        if (result_read < 0) {
+            std::cout << "  Failure: Nothing to test." << std::endl;
+            return 1;
+        }
+
+        int errors = comparison<max_chunk_size>(result.data(), expected.data());
+        if (errors != 0) {
+            std::cout << "  Failure: Data are not the same." << std::endl;
+            return 1;
+        }
+    }
+
+    fclose(file_result);
+    fclose(file_expected);
+
+    std::cout << "Success." << std::endl;
+
+    return 0;
+}

@@ -7,6 +7,8 @@
 #include "CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp" // IWYU pragma: keep
 
 void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vector<int> & codeword) {
+    assert(message.size() == CQCSPModulator::K);
+    assert(codeword.size() == CQCSPModulator::N);
     const int * const KSYMB  = message.data();
     int *             CODEWD = codeword.data();
 
@@ -18,21 +20,20 @@ void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vec
     // std::cerr << K << " " << M << " " << N << " " << log2GF << std::endl;
 
 #if (ENCODER_TYPE > 0)
-    for (int k = 0; k < CQCSPModulator::K; k++) {
-        NSYMB[M + k] = KSYMB[k];
-    }
+    std::memcpy(NSYMB + M, KSYMB, CQCSPModulator::K * sizeof(int));
+    std::memset(NSYMB, 0, M * sizeof(int));
 
     for (int m = M - 1; m >= 0; m--) {
         int buf = 0;
         for (int n = m + 1; n < CQCSPModulator::N; n++) {
             const int alpha = QCSP::GF_ENC[m][n];
             if (alpha != 0) {
-                const int mult = QCSP::GF_MUL[alpha][NSYMB[n]];
-                buf            = QCSP::GF_ADD[buf][mult];
+                const int mult = QCSP::GF_MUL[alpha][KSYMB[n]];
+                NSYMB[m]       = QCSP::GF_ADD[NSYMB[m]][mult];
             }
         }
         assert(buf < CQCSPModulator::q);
-        NSYMB[m] = QCSP::GF_DIV[buf][QCSP::GF_ENC[m][m]];
+        NSYMB[m] = QCSP::GF_DIV[NSYMB[m]][QCSP::GF_ENC[m][m]];
     }
 #else
     std::memcpy(NSYMB, KSYMB, CQCSPModulator::K * sizeof(int));
@@ -55,6 +56,8 @@ void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vec
 #endif
 
     for (int n = 0; n < CQCSPModulator::N; n++) {
+        assert(NSYMB[n] < CQCSPModulator::pn_size());
+        assert(NSYMB[n] >= 0);
         CODEWD[QCSP::GF_PERM[n]] = NSYMB[n];
     }
 
@@ -67,6 +70,9 @@ void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vec
 }
 
 void QCSP::CCompleteModulator::modulate(const std::vector<int> & codeword, std::vector<int> & ccsk_frame) {
+    assert(codeword.size() == CQCSPModulator::N);
+    assert(ccsk_frame.size() == CQCSPModulator::N * CQCSPModulator::pn_size());
+    assert(pn_sequence.size() == CQCSPModulator::pn_size());
     const int * const src = codeword.data();
     int * const       dst = ccsk_frame.data();
 
@@ -76,6 +82,9 @@ void QCSP::CCompleteModulator::modulate(const std::vector<int> & codeword, std::
     for (int sb_idx = 0; sb_idx < CQCSPModulator::codeword_size(); sb_idx++) {
         int * const       curr_symbol = dst + sb_idx * CQCSPModulator::pn_size();
         const int * const p_middle    = p_pn_begin + src[sb_idx];
+
+        assert(src[sb_idx] >= 0);
+        assert(src[sb_idx] < CQCSPModulator::pn_size());
 
         // PN Rotation
         // do: [begin, ···, middle, ···, end] → [middle, ···, end, begin, ···, middle - 1 ]

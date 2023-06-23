@@ -32,6 +32,7 @@
 #include "CQCSPModulator/CQCSPModulator.hpp"
 #include "CSymbolGenerator/CGPSGenerator/CGPSGenerator.hpp"
 #include "CSymbolGenerator/CTimerGenerator/CTimerGenerator.hpp"
+#include "CSymbolGenerator/CZeroGenerator/CZeroGenerator.hpp"
 #include "threads/timer.hpp"
 #include "threads/user_interface.hpp"
 #include "utilities/hmi_functions.hpp"
@@ -98,9 +99,9 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         case QCSP::GEN_TIMER:
             generator = std::make_shared<QCSP::CTimerGenerator>();
             break;
-        // case QCSP::GEN_ZERO:
-        //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
-        //     break;
+        case QCSP::GEN_ZERO:
+            generator = std::make_shared<QCSP::CZeroGenerator>();
+            break;
         case QCSP::GEN_GPS:
             generator = std::make_shared<QCSP::CGPSGenerator>(prm.gps_tty, false, true);
             break;
@@ -192,7 +193,6 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         copy(frame_upsp_int8.begin(), frame_upsp_int8.begin() + conv_size, frame_cpx.begin());
 
         conv_engine->process(frame_cpx, filtered_data);
-
         for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
             static const float scaling = 5.f / float(conv_size);
             // Remove unnecessary imaginary parts introduced by FFT and add scaling

@@ -1,0 +1,20 @@
+#ifndef _ZERO_GENERATOR_HPP_
+#define _ZERO_GENERATOR_HPP_
+
+#include <vector>
+
+#include "CSymbolGenerator/CSymbolGenerator.hpp"
+
+namespace QCSP {
+
+class CZeroGenerator : public CSymbolGenerator {
+public:
+    virtual void process(std::vector<int> & symbols) override;
+
+    CZeroGenerator()          = default;
+    virtual ~CZeroGenerator() = default;
+};
+
+} // namespace QCSP
+
+#endif // _ZERO_GENERATOR_HPP_

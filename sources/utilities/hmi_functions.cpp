@@ -207,7 +207,7 @@ void QCSP::parse_vm(const po::variables_map & vm, emitter_parameters & prm) {
 
     prm.inter_delay = size_t(std::max(ceil(vm.at("inter-delay").as<double>()), 0.));
 
-    const bool max_count = vm.at("count").as<unsigned>();
+    const unsigned max_count = vm.at("count").as<unsigned>();
     prm.max_count        = max_count;
     prm.count_limited    = max_count > 0;
 

@@ -87,6 +87,7 @@ add_executable (
   sources/CFftEngine/CFftComplexEngine.cpp
   sources/CSymbolGenerator/CSymbolGenerator.cpp
   sources/CSymbolGenerator/CTimerGenerator/CTimerGenerator.cpp
+  sources/CSymbolGenerator/CZeroGenerator/CZeroGenerator.cpp
   sources/CSymbolGenerator/CGPSGenerator/CGPSGenerator.cpp
   sources/CQCSPModulator/CQCSPModulator.cpp
   sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
@@ -106,3 +107,9 @@ target_link_libraries (
           Threads::Threads
 )
 target_link_libraries (emitter_usrp PRIVATE NemaTode)
+
+if (true)
+  cmake_policy (SET CMP0110 NEW)
+  add_subdirectory (testsuite)
+
+endif ()
