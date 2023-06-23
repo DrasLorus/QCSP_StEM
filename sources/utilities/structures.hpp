@@ -10,7 +10,8 @@ typedef enum {
     // GEN_RANDOM,
     GEN_TIMER,
     GEN_ZERO,
-    GEN_GPS
+    GEN_GPS,
+    GEN_FILE
 } generator_t;
 
 typedef enum {

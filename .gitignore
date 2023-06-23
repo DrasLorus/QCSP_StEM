@@ -66,3 +66,6 @@ _deps
 build
 sources/utilities/definitions.hpp
 sources/CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp
+
+# Backup files
+*.bak
