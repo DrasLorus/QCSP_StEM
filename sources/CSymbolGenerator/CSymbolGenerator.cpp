@@ -16,5 +16,8 @@ QCSP::generator_t QCSP::gen_from_string(const std::string & in) {
     if (in == "file") {
         return GEN_FILE;
     }
+    if (in == "stdin") {
+        return GEN_CIN;
+    }
     return GEN_UNKNOW;
 }

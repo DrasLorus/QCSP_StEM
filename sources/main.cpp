@@ -30,6 +30,9 @@
 #include "CConvEngine/CHalfCorrEngine.hpp"
 #include "CQCSPModulator/CCompleteModulator/CCompleteModulator.hpp"
 #include "CQCSPModulator/CQCSPModulator.hpp"
+#include "CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.hpp"
+#include "CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.hpp"
+#include "CSymbolGenerator/CFileReaderGenerator/CFileReaderGenerator.hpp"
 #include "CSymbolGenerator/CGPSGenerator/CGPSGenerator.hpp"
 #include "CSymbolGenerator/CTimerGenerator/CTimerGenerator.hpp"
 #include "CSymbolGenerator/CZeroGenerator/CZeroGenerator.hpp"
@@ -61,7 +64,7 @@ void upsample8(const Tin * __restrict in, Tout * __restrict out) {
 
 int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
-    uhd::set_thread_priority_safe();
+    // uhd::set_thread_priority_safe();
 
     po::variables_map        vm;
     QCSP::emitter_parameters prm;
@@ -72,10 +75,10 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     QCSP::parse_vm(vm, prm);
 
-    uhd::usrp::multi_usrp::sptr emitter_usrp;
+    uhd::usrp::multi_usrp::sptr usrp_transmitter;
     uhd::tx_streamer::sptr      send_stream;
     if (!prm.to_file) {
-        QCSP::init_usrp(prm, emitter_usrp, send_stream);
+        QCSP::init_usrp(prm, usrp_transmitter, send_stream);
     }
 
     FILE * file_frames = nullptr;
@@ -104,6 +107,12 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
             break;
         case QCSP::GEN_GPS:
             generator = std::make_shared<QCSP::CGPSGenerator>(prm.gps_tty, false, true);
+            break;
+        case QCSP::GEN_FILE:
+            generator = std::make_shared<QCSP::CFileReaderGenerator>(prm.input_file);
+            break;
+        case QCSP::GEN_CIN:
+            generator = std::make_shared<QCSP::CCinReaderGenerator>();
             break;
         default:
             std::cerr << "Error: generator type is unknown." << std::endl;
@@ -161,6 +170,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::atomic<bool> bRunning(true);
     std::atomic<bool> bTimeNotReached(true);
+    std::atomic<bool> bGood(true);
 
     QCSP::ui_arg_t ui_arg = {std::ref(bRunning), prm.no_ui};
     pthread_t      ui_tid = 0;
@@ -174,13 +184,20 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     const size_t min_size   = size_t(ceil(frame_time * 2));
     const size_t true_delay = std::max(min_size, prm.inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
 
-    bool bCountNotReached = true;
+    bool       bCountNotReached = true;
+    const bool stream_generator = (prm.gen_type == QCSP::GEN_CIN) || (prm.gen_type == QCSP::GEN_FILE);
 
     const std::chrono::microseconds wait_time = std::chrono::microseconds(true_delay);
 
-    while (bRunning && bCountNotReached && bTimeNotReached) {
+    while (bRunning && bCountNotReached && bTimeNotReached && bGood) {
 
         generator->process(message);
+        if (stream_generator) {
+            bGood = static_cast<const QCSP::CByteReaderGenerator *>(generator.get())->good();
+            if (!bGood) {
+                break;
+            }
+        }
         modulator->process(message, qcsp_frame);
 
         // std::cout << std::endl;
@@ -201,7 +218,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         }
 
         if (prm.to_file) {
-            QCSP::write_to_file<std::complex<float>>("dump_file.bin", buffer);
+            QCSP::write_to_file<std::complex<float>>(prm.output_file, buffer);
         } else {
             QCSP::send_from_memory<std::complex<float>>(send_stream, buffer);
         }
@@ -214,6 +231,14 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
         const bool tmp_cond = ++cnt < prm.max_count;
         bCountNotReached    = (prm.count_limited ? tmp_cond : true);
+    }
+
+    if (!bGood && stream_generator) {
+        if (static_cast<const QCSP::CByteReaderGenerator *>(generator.get())->eof()) {
+            std::cout << "End of file reached." << std::endl;
+        } else {
+            std::cout << "Unknown error encountered with the input." << std::endl;
+        }
     }
 
     if (!bCountNotReached) {

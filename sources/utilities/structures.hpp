@@ -11,7 +11,8 @@ typedef enum {
     GEN_TIMER,
     GEN_ZERO,
     GEN_GPS,
-    GEN_FILE
+    GEN_FILE,
+    GEN_CIN
 } generator_t;
 
 typedef enum {
@@ -33,11 +34,13 @@ struct emitter_parameters {
     double      ttl_us;
     bool        time_limited;
     bool        to_file;
+    std::string output_file;
     bool        save_frames;
     bool        no_ui;
     generator_t gen_type;
     modulator_t mod_type;
     std::string gps_tty;
+    std::string input_file;
     bool        has_clock_source;
     std::string clock_source;
     bool        has_subdev;

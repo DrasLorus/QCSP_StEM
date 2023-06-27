@@ -1,31 +1,34 @@
 
-#ifndef _C_READ_GENERATOR_HPP_
-#define _C_READ_GENERATOR_HPP_
+#ifndef _C_BYTE_READER_GENERATOR_HPP_
+#define _C_BYTE_READER_GENERATOR_HPP_
 
 #include "CSymbolGenerator/CSymbolGenerator.hpp"
 
-#include <fstream>
 #include <iostream>
 
 namespace QCSP {
 
 class CByteReaderGenerator : public CSymbolGenerator {
-private:
-    std::ifstream file_stream;
+protected:
+    std::istream *            byte_stream;
+    static constexpr unsigned nb_bytes = (CSymbolGenerator::K * CSymbolGenerator::p) / 8U;
+    std::vector<char>         buffer;
+
+    virtual bool is_implemented() const = 0;
 
 public:
-    bool is_open() const { return this->file_stream.is_open(); }
-    bool end_of_file() const { return this->file_stream.eof(); }
-    void open(const std::string & filepath);
-    void close();
+    bool good() const { return this->byte_stream->good(); }
+    bool eof() const { return this->byte_stream->eof(); }
 
     virtual void process(std::vector<int> & symbols) override;
 
-    CByteReaderGenerator() = default;
-    CByteReaderGenerator(const std::string & filepath);
-    virtual ~CByteReaderGenerator();
+    CByteReaderGenerator();
+    CByteReaderGenerator(const CByteReaderGenerator &) = delete;
+    CByteReaderGenerator(CByteReaderGenerator &&)      = delete;
+
+    virtual ~CByteReaderGenerator() = default;
 };
 
 } // namespace QCSP
 
-#endif // _C_READ_GENERATOR_HPP_
+#endif // _C_BYTE_READER_GENERATOR_HPP_

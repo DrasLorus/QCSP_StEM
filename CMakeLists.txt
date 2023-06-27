@@ -78,10 +78,11 @@ configure_file (
 )
 
 add_executable (
-  emitter_usrp
-  sources/main_usrp_emitter.cpp
+  qcsp_standalone_emitter
+  sources/main.cpp
   sources/threads/user_interface.cpp
   sources/threads/timer.cpp
+  sources/utilities/conversions.cpp
   sources/utilities/hmi_functions.cpp
   sources/utilities/usrp_functions.cpp
   sources/CFftEngine/CFftComplexEngine.cpp
@@ -89,16 +90,19 @@ add_executable (
   sources/CSymbolGenerator/CTimerGenerator/CTimerGenerator.cpp
   sources/CSymbolGenerator/CZeroGenerator/CZeroGenerator.cpp
   sources/CSymbolGenerator/CGPSGenerator/CGPSGenerator.cpp
+  sources/CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.cpp
+  sources/CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.cpp
+  sources/CSymbolGenerator/CFileReaderGenerator/CFileReaderGenerator.cpp
   sources/CQCSPModulator/CQCSPModulator.cpp
   sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
 )
 
-target_include_directories (emitter_usrp PUBLIC sources)
-target_include_directories (emitter_usrp SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
-target_include_directories (emitter_usrp SYSTEM PRIVATE gps-nematode/include)
+target_include_directories (qcsp_standalone_emitter PUBLIC sources)
+target_include_directories (qcsp_standalone_emitter SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
+target_include_directories (qcsp_standalone_emitter SYSTEM PRIVATE gps-nematode/include)
 
 target_link_libraries (
-  emitter_usrp
+  qcsp_standalone_emitter
   PRIVATE ${UHD_LIBRARIES}
           Boost::program_options
           matio
@@ -106,10 +110,9 @@ target_link_libraries (
           ${fftwf}
           Threads::Threads
 )
-target_link_libraries (emitter_usrp PRIVATE NemaTode)
+target_link_libraries (qcsp_standalone_emitter PRIVATE NemaTode)
 
-if (true)
+if (ENABLE_TESTING)
   cmake_policy (SET CMP0110 NEW)
   add_subdirectory (testsuite)
-
 endif ()

@@ -1,30 +1,21 @@
 #include "CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.hpp"
 
-void QCSP::CByteReaderGenerator::open(const std::string & filepath) {
-    if (file_stream.is_open()) {
-        file_stream.close();
-    }
-    this->file_stream.open(filepath);
-    if (!file_stream.is_open()) {
-        throw "ERROR: cannot open " + filepath + ".";
-    }
+#include "utilities/conversions.hpp"
+#include <cstring>
+
+QCSP::CByteReaderGenerator::CByteReaderGenerator()
+    : CSymbolGenerator(),
+      buffer(nb_bytes, 0) {
 }
 
-void QCSP::CByteReaderGenerator::close() {
-    if (!file_stream.is_open()) {
-        throw "ERROR: double closing.";
-    }
-    this->file_stream.close();
-    if (file_stream.is_open()) {
-        throw "ERROR: cannot close.";
-    }
-}
+void QCSP::CByteReaderGenerator::process(std::vector<int> & symbols) {
+    static char * const ptr_buffer = this->buffer.data();
 
-QCSP::CByteReaderGenerator::CByteReaderGenerator(const std::string & filepath)
-    : CSymbolGenerator() {
-    this->open(filepath);
-}
+    std::memset(ptr_buffer, 0, nb_bytes); // Reset buffer
 
-QCSP::CByteReaderGenerator::~CByteReaderGenerator(){
-    this->close();
+    if (this->good() && !(this->eof())) {
+        byte_stream->read(ptr_buffer, nb_bytes);
+    }
+
+    bytes_to_int<CSymbolGenerator::p, CSymbolGenerator::K>(buffer, symbols);
 }

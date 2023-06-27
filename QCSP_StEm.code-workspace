@@ -1,8 +1,55 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {},
+  "launch": {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "g++ - Build and debug qcsp_standalone_emitter",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/qcsp_standalone_emitter",
+        "args": [
+          "--to-file",
+          "--output-file",
+          "${workspaceFolder}/build/testsuite/result_file_random_data_00.bin",
+          "--no-ui",
+          "--generator",
+          "file",
+          "--input-file",
+          "${workspaceFolder}/build/testsuite/random_data_00.bin",
+          "-r",
+          "1e6",
+          "-f",
+          "433.92e6",
+          "-g",
+          "50",
+          "-a",
+          "TX/RX",
+          "--count",
+          "10000"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}/build/testsuite",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "miDebuggerPath": "/usr/bin/gdb"
+      }
+    ]
+  }
 }

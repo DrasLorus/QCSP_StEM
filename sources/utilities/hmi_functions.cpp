@@ -5,10 +5,7 @@
 
 #include <string>
 #include <uhd/exception.hpp>
-// #include <uhd/types/tune_request.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
-// #include <uhd/utils/safe_main.hpp>
-// #include <uhd/utils/thread.hpp>
 
 #include "CQCSPModulator/CQCSPModulator.hpp"
 #include "CSymbolGenerator/CSymbolGenerator.hpp"
@@ -19,7 +16,7 @@
 
 namespace po = boost::program_options;
 
-#define USAGE(desc) "Usage: emitter_usrp <rate> <freq> <gain> <antenna> [options]\n"                      \
+#define USAGE(desc) "Usage: qcsp_standalone_emitter <rate> <freq> <gain> <antenna> [options]\n"           \
                         << "Options:\n"                                                                   \
                         << desc << "\n\n"                                                                 \
                         << "Note: <rate>, <freq>, <gain> and <antenna> must be specified exactly once,\n" \
@@ -73,13 +70,18 @@ int QCSP::parse_user_input(int argc, char * argv[], po::variables_map & vm) {
                                                               "Values too low are ignored (A minimum interval of one buffer is hardcoded).\n"
                                                               "The value is ceiled.")(
         "to-file", "Write to a file instead of a USRP.")(
+        "output-file", po::value<std::string>()->default_value("dump_file.bin"), "File to write to, when using '--to-file'.")(
         "save-frames", "Emit but also store frames locally")(
-        "generator", po::value<std::string>()->default_value("gps"), "Set the generator used. Either 'random' (randomly generated bits),"
-                                                                     " 'timer' (to use the predictable CTimerTransmitter),"
-                                                                     " 'zero' (to send only zeroes) or 'gps' (binary payload with GPS position).")(
+        "generator", po::value<std::string>()->default_value("gps"), "Set the generator used. You can choose between :" //// "Either 'random' (randomly generated bits),"
+                                                                     " - 'timer' (to use the predictable CTimerTransmitter),"
+                                                                     " - 'zero' (to send only zeroes),"
+                                                                     " - 'gps' (binary payload with GPS position),"
+                                                                     " - 'file' (read and send a file),"
+                                                                     " - 'stdin' (read bytes from standard input).")(
         "modulator", po::value<std::string>()->default_value("real"), "Set the modulator used. Either 'real' (true QCSP modulator),"
-                                                                      " or 'fake' (generate a valid frame independently of the payload).")(
-        "tty", po::value<std::string>()->default_value("/dev/ttyS0"), "Set the TTY used to read GPS data. Only used with the 'gps' generator.")(
+                                                                      " or 'fake' (generate the same valid frame independently of the payload).")(
+        "tty", po::value<std::string>(), "Set the TTY used to read GPS data. Only required with the 'gps' generator.")(
+        "input-file", po::value<std::string>(), "Set the file used as input. Only required with the 'file' generator.")(
         "no-ui", "Disable the UI (program no longer cleanly stoppable by the user).")(
         "probe", "Look for all available USRP.");
 
@@ -208,27 +210,42 @@ void QCSP::parse_vm(const po::variables_map & vm, emitter_parameters & prm) {
     prm.inter_delay = size_t(std::max(ceil(vm.at("inter-delay").as<double>()), 0.));
 
     const unsigned max_count = vm.at("count").as<unsigned>();
-    prm.max_count        = max_count;
-    prm.count_limited    = max_count > 0;
+    prm.max_count            = max_count;
+    prm.count_limited        = max_count > 0;
 
     const double ttl_us = ceil(vm.at("duration").as<double>());
     prm.ttl_us          = ttl_us;
     prm.time_limited    = ttl_us > 0;
 
     prm.to_file     = vm.count("to-file");
+    prm.output_file = vm.at("output-file").as<std::string>();
     prm.save_frames = vm.count("save-frames");
     prm.no_ui       = vm.count("no-ui");
 
     prm.gen_type = QCSP::gen_from_string(vm.at("generator").as<std::string>());
     prm.mod_type = QCSP::mod_from_string(vm.at("modulator").as<std::string>());
 
-    const std::string gps_tty = vm.at("tty").as<std::string>();
-    prm.gps_tty               = gps_tty;
     if (prm.gen_type == QCSP::GEN_GPS) {
+        if (!vm.count("tty")) {
+            throw std::invalid_argument("The tty argument is required with the 'gps' generator.'\nAdd '--tty </path/to/tty>' to specify it.");
+        }
+        const std::string & gps_tty = vm.at("tty").as<std::string>();
         if (FILE * test = fopen(gps_tty.c_str(), "r")) {
             fclose(test);
+            prm.gps_tty = gps_tty;
         } else {
             throw std::runtime_error("while opening the GPS tty " + gps_tty + ":\n    " + std::string(strerror(errno)));
+        }
+    } else if (prm.gen_type == QCSP::GEN_FILE) {
+        if (!vm.count("input-file")) {
+            throw std::invalid_argument("The input file argument is required with the 'file' generator.\nAdd '--input-file </path/to/file>' to specify it.");
+        }
+        const std::string & input_file = vm.at("input-file").as<std::string>();
+        if (FILE * test = fopen(input_file.c_str(), "r")) {
+            fclose(test);
+            prm.input_file = input_file;
+        } else {
+            throw std::runtime_error("while opening the file " + input_file + ":\n    " + std::string(strerror(errno)));
         }
     }
 

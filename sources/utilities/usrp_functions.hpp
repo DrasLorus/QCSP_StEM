@@ -15,7 +15,7 @@ void check_usrp(uhd::device_addr_t device_args = std::string(""));
 
 void init_usrp(
     const emitter_parameters &    prm,
-    uhd::usrp::multi_usrp::sptr & emitter_usrp,
+    uhd::usrp::multi_usrp::sptr & usrp_transmitter,
     uhd::tx_streamer::sptr &      send_stream);
 
 template <class samp_type>
