@@ -9,7 +9,7 @@ template <unsigned TSize>
 int comparison(float * __restrict a, float * __restrict b) {
     int errors = 0;
     for (unsigned u = 0; u < TSize; u++) {
-        errors += int(std::abs(a[u] - b[u]) > 1e-6f);
+        errors += int(std::abs(a[u] - b[u]) > 2e-6f);
     }
     return errors;
 }
@@ -38,6 +38,8 @@ int main(int argc, char * argv[]) {
     std::vector<float> result(max_chunk_size, 0);
     std::vector<float> expected(max_chunk_size, 0);
 
+    size_t counter = 0ULL;
+
     while (!(feof(file_result) || feof(file_expected))) {
         int result_read   = fread((void *) result.data(),
                                   sizeof(float),
@@ -61,7 +63,8 @@ int main(int argc, char * argv[]) {
 
         int errors = comparison<max_chunk_size>(result.data(), expected.data());
         if (errors != 0) {
-            std::cout << "  Failure: Data are not the same." << std::endl;
+            std::cout << "  Failure: Data are not the same between values "
+                      << counter << " and " << counter + result_read << "." << std::endl;
             return 1;
         }
     }

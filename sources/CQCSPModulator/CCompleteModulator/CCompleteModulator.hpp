@@ -14,11 +14,10 @@ private:
     const std::vector<int> pn_sequence;
     const std::vector<int> om_sequence;
 
-    // NB-LDPC Matrices
-
-    void encode(const std::vector<int> & message, std::vector<int> & codeword);
-    void modulate(const std::vector<int> & codeword, std::vector<int> & ccsk_frame);
-    void overmodulate(const std::vector<int> & ccsk_frame, std::vector<int> & frame);
+protected:
+    virtual void encode(const std::vector<int> & message, std::vector<int> & codeword);
+    virtual void modulate(const std::vector<int> & codeword, std::vector<int> & ccsk_frame);
+    virtual void overmodulate(const std::vector<int> & ccsk_frame, std::vector<int> & frame);
 
 public:
     virtual void process(const std::vector<int> & input, std::vector<int> & output) override {

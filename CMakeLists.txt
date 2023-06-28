@@ -95,6 +95,7 @@ add_executable (
   sources/CSymbolGenerator/CFileReaderGenerator/CFileReaderGenerator.cpp
   sources/CQCSPModulator/CQCSPModulator.cpp
   sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
+  sources/CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.cpp
 )
 
 target_include_directories (qcsp_standalone_emitter PUBLIC sources)

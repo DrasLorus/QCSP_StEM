@@ -17,7 +17,7 @@ typedef enum {
 
 typedef enum {
     MOD_UNKNOW,
-    // MOD_FAKE,
+    MOD_NOPC,
     // MOD_ZERO,
     MOD_REAL
 } modulator_t;

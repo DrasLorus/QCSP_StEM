@@ -79,7 +79,7 @@ int QCSP::parse_user_input(int argc, char * argv[], po::variables_map & vm) {
                                                                      " - 'file' (read and send a file),"
                                                                      " - 'stdin' (read bytes from standard input).")(
         "modulator", po::value<std::string>()->default_value("real"), "Set the modulator used. Either 'real' (true QCSP modulator),"
-                                                                      " or 'fake' (generate the same valid frame independently of the payload).")(
+                                                                      " or 'nopc' (NO Parity-Check, the codeword is a valid one, the generator is ignored).")(
         "tty", po::value<std::string>(), "Set the TTY used to read GPS data. Only required with the 'gps' generator.")(
         "input-file", po::value<std::string>(), "Set the file used as input. Only required with the 'file' generator.")(
         "no-ui", "Disable the UI (program no longer cleanly stoppable by the user).")(

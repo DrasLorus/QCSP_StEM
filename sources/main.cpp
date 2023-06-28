@@ -29,6 +29,7 @@
 
 #include "CConvEngine/CHalfCorrEngine.hpp"
 #include "CQCSPModulator/CCompleteModulator/CCompleteModulator.hpp"
+#include "CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.hpp"
 #include "CQCSPModulator/CQCSPModulator.hpp"
 #include "CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.hpp"
 #include "CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.hpp"
@@ -121,12 +122,12 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::shared_ptr<QCSP::CQCSPModulator> modulator;
     switch (prm.mod_type) {
-        // case QCSP::MOD_FAKE:
-        //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
-        //     break;
         // case QCSP::MOD_ZERO:
         //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
         //     break;
+        case QCSP::MOD_NOPC:
+            modulator = std::make_shared<QCSP::CFakeEncoderModulator>(pn, best_N);
+            break;
         case QCSP::MOD_REAL:
             modulator = std::make_shared<QCSP::CCompleteModulator>(pn, best_N);
             break;
