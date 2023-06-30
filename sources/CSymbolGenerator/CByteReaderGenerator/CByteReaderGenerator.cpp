@@ -12,7 +12,7 @@ void QCSP::CByteReaderGenerator::process(std::vector<int> & symbols) {
     static char * const ptr_buffer = this->buffer.data();
 
     std::memset(ptr_buffer, 0, nb_bytes); // Reset buffer
-
+    
     if (this->good() && !(this->eof())) {
         byte_stream->read(ptr_buffer, nb_bytes);
     }

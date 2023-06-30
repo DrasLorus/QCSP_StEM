@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <cstring>
 
+namespace QCSP {
+
 template <>
-void QCSP::bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & output) {
+void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & output) {
     constexpr unsigned nb_bits    = 6;
     constexpr unsigned nb_symbols = 20;
     constexpr uint8_t  int6_mask  = (1U << nb_bits) - 1U;
@@ -44,3 +46,5 @@ void QCSP::bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int>
         }
     }
 }
+
+} // namespace QCSP

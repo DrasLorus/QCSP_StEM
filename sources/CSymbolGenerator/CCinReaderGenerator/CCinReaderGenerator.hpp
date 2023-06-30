@@ -14,6 +14,8 @@ protected:
     virtual bool is_implemented() const final { return true; };
 
 public:
+    virtual void process(std::vector<int> & symbols) override;
+
     CCinReaderGenerator();
     virtual ~CCinReaderGenerator() = default;
 };
