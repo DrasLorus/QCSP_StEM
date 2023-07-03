@@ -12,7 +12,9 @@
 namespace QCSP {
 
 template <>
-class CFftEngine<std::complex<float>> {
+class CFftEngine<std::complex<float>> : public CFftwRootEngine<float> {
+    using base = CFftwRootEngine<float>;
+
     using real_t         = float;
     using complex_t      = std::complex<float>;
     using complex_vector = std::vector<complex_t>;
@@ -33,7 +35,7 @@ private:
 public:
     size_t size() const;
 
-    void process(const complex_vector & input, complex_vector & output);
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CFftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
 
@@ -43,7 +45,9 @@ public:
 // TFloat == double
 
 template <>
-class CFftEngine<std::complex<double>> {
+class CFftEngine<std::complex<double>> : public CFftwRootEngine<double> {
+    using base = CFftwRootEngine<double>;
+
     using real_t         = double;
     using complex_t      = std::complex<double>;
     using complex_vector = std::vector<complex_t>;
@@ -63,7 +67,7 @@ private:
 public:
     size_t size() const;
 
-    void process(const complex_vector & input, complex_vector & output);
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CFftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
     virtual ~CFftEngine();
@@ -72,7 +76,9 @@ public:
 // TFloat == float
 
 template <>
-class CIfftEngine<std::complex<float>> {
+class CIfftEngine<std::complex<float>> : public CFftwRootEngine<float> {
+    using base = CFftwRootEngine<float>;
+
     using real_t         = float;
     using complex_t      = std::complex<float>;
     using complex_vector = std::vector<complex_t>;
@@ -92,7 +98,7 @@ private:
 public:
     size_t size() const;
 
-    void process(const complex_vector & input, complex_vector & output);
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CIfftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
 
@@ -102,7 +108,9 @@ public:
 // TFloat == double
 
 template <>
-class CIfftEngine<std::complex<double>> {
+class CIfftEngine<std::complex<double>> : public CFftwRootEngine<double> {
+    using base = CFftwRootEngine<double>;
+
     using real_t         = double;
     using complex_t      = std::complex<double>;
     using complex_vector = std::vector<complex_t>;
@@ -123,7 +131,7 @@ private:
 public:
     size_t size() const;
 
-    void process(const complex_vector & input, complex_vector & output);
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CIfftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
 

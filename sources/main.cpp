@@ -66,7 +66,6 @@ void upsample8(const Tin * __restrict in, Tout * __restrict out) {
 int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     // uhd::set_thread_priority_safe();
-
     po::variables_map        vm;
     QCSP::emitter_parameters prm;
 

@@ -7,31 +7,33 @@
 #include <fftw3.h>
 #include <vector>
 
+#include "./CFftwRootEngine.hpp"
+
 namespace QCSP {
 
 template <typename TFloat>
-class CFftEngine {
+class CFftEngine : public CFftwRootEngine<TFloat> {
     using real_t         = TFloat;
     using complex_t      = std::complex<real_t>;
     using complex_vector = std::vector<complex_t>;
 
 public:
-    size_t size() const;
-    void   process(const complex_vector & input, complex_vector & output);
+    size_t       size() const;
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CFftEngine(size_t size, unsigned plan_strategy);
     virtual ~CFftEngine();
 };
 
 template <typename TFloat>
-class CIfftEngine {
+class CIfftEngine : public CFftwRootEngine<TFloat> {
     using real_t         = TFloat;
     using complex_t      = std::complex<real_t>;
     using complex_vector = std::vector<complex_t>;
 
 public:
-    size_t size() const;
-    void   process(const complex_vector & input, complex_vector & output);
+    size_t       size() const;
+    virtual void process(const complex_vector & input, complex_vector & output) override;
 
     CIfftEngine(size_t size, unsigned plan_strategy);
     virtual ~CIfftEngine();

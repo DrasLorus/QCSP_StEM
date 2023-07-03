@@ -3,7 +3,7 @@
 #include "utilities/conversions.hpp"
 #include <cstring>
 
-#if defined (__unix__)
+#if defined(__unix__)
 #include <termios.h>
 #include <unistd.h>
 #endif
@@ -14,7 +14,7 @@ QCSP::CCinReaderGenerator::CCinReaderGenerator()
 }
 
 void QCSP::CCinReaderGenerator::process(std::vector<int> & symbols) {
-#if defined (__unix__)
+#if defined(__unix__)
     struct termios old = {0};
     if (tcgetattr(STDIN_FILENO, &old) < 0) {
         perror("tcsetattr()");
@@ -29,7 +29,7 @@ void QCSP::CCinReaderGenerator::process(std::vector<int> & symbols) {
 
     QCSP::CByteReaderGenerator::process(symbols);
 
-#if defined (__unix__)
+#if defined(__unix__)
     old.c_lflag |= ICANON;
     if (tcsetattr(STDIN_FILENO, TCSADRAIN, &old) < 0) {
         perror("tcsetattr ~ICANON");

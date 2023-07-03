@@ -16,6 +16,8 @@ option (PROFILING "enable GProf profiling" OFF)
 
 option (ENABLE_TESTING "enable unit-testing with Catch2" OFF)
 
+option (ENABLE_MKL "enable use of intel MKL" OFF)
+
 # Find dependencies ###############################################################################
 find_package (UHD REQUIRED)
 find_package (Boost REQUIRED COMPONENTS program_options)
@@ -23,17 +25,23 @@ find_package (Threads REQUIRED)
 
 find_library (matio NAMES matio REQUIRED)
 
-find_library (
-  fftw
-  NAMES fftw fftw3
-  HINTS "/usr/local/lib" "/usr/local" REQUIRED
-)
+if (ENABLE_MKL)
+  set (MKL_INTERFACE_FULL intel_lp64)
+  set (MKL_THREADING intel_thread)
+  find_package (MKL CONFIG REQUIRED)
+else ()
+  find_library (
+    fftw
+    NAMES fftw fftw3
+    HINTS "/usr/local/lib" "/usr/local" REQUIRED
+  )
 
-find_library (
-  fftwf
-  NAMES fftwf fftw3f
-  HINTS "/usr/local/lib" "/usr/local" REQUIRED
-)
+  find_library (
+    fftwf
+    NAMES fftwf fftw3f
+    HINTS "/usr/local/lib" "/usr/local" REQUIRED
+  )
+endif ()
 
 add_subdirectory (gps-nematode EXCLUDE_FROM_ALL)
 add_compile_definitions (USE_NEMATODE=1)
@@ -107,11 +115,21 @@ target_link_libraries (
   PRIVATE ${UHD_LIBRARIES}
           Boost::program_options
           matio
-          ${fftw}
-          ${fftwf}
           Threads::Threads
 )
 target_link_libraries (qcsp_standalone_emitter PRIVATE NemaTode)
+
+if (ENABLE_MKL)
+  target_compile_options (
+    qcsp_standalone_emitter PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>
+  )
+  target_include_directories (
+    qcsp_standalone_emitter PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+  target_link_libraries (qcsp_standalone_emitter PUBLIC $<LINK_ONLY:MKL::MKL>)
+else ()
+  target_link_libraries (qcsp_standalone_emitter PUBLIC fftw3f_threads ${fftw} ${fftwf})
+endif ()
 
 if (ENABLE_TESTING)
   cmake_policy (SET CMP0110 NEW)
