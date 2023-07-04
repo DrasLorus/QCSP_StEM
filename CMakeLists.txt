@@ -132,6 +132,7 @@ else ()
 endif ()
 
 if (ENABLE_TESTING)
+  enable_testing()
   cmake_policy (SET CMP0110 NEW)
   add_subdirectory (testsuite)
 endif ()

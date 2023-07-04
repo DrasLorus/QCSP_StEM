@@ -29,7 +29,7 @@ set (
 
 add_custom_command (
   OUTPUT ${LOCAL_RESULT_FILE}
-  COMMAND ${CMAKE_COMMAND} -E remove dump_file.bin
+  COMMAND ${CMAKE_COMMAND} -E remove ${LOCAL_RESULT_FILE}
   COMMAND ${LOCAL_CMDLINE_ZERO}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS qcsp_standalone_emitter
@@ -60,9 +60,9 @@ configure_file (
 
 add_custom_command (
   OUTPUT ${LOCAL_OUTPUT_FILE} ${LOCAL_INPUT_FILE}
-  COMMAND ${CMAKE_COMMAND} -E tar -xvf "${CMAKE_SOURCE_DIR}/data/random_data_test.bin.zst"
+  COMMAND ${CMAKE_COMMAND} -E tar -xvf "${CMAKE_SOURCE_DIR}/data/random_data_test.tar.zst"
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${CMAKE_SOURCE_DIR}/data/random_data_test.bin.zst
+  DEPENDS ${CMAKE_SOURCE_DIR}/data/random_data_test.tar.zst
 )
 
 add_custom_target (random_data_archive_files DEPENDS ${LOCAL_INPUT_FILE} ${LOCAL_OUTPUT_FILE})
@@ -81,7 +81,7 @@ add_custom_command (
   COMMAND_EXPAND_LISTS
 )
 
-add_custom_target (random_data_stdin_test_files DEPENDS ${LOCAL_RESULT_FILE} ${LOCAL_OUTPUT_FILE})
+add_custom_target (random_data_stdin_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files)
 
 add_executable (random_data_stdin_comparator random_data_stdin_comparator.cc)
 if (LINUX)
@@ -115,7 +115,7 @@ add_custom_command (
   COMMAND_EXPAND_LISTS
 )
 
-add_custom_target (random_data_file_test_files DEPENDS ${LOCAL_RESULT_FILE} ${LOCAL_OUTPUT_FILE})
+add_custom_target (random_data_file_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files)
 
 add_executable (random_data_file_comparator random_data_file_comparator.cc)
 if (LINUX)
