@@ -7,7 +7,13 @@
 
 #include "utilities/structures.hpp"
 
+#include <iostream>
+
 namespace QCSP {
+
+std::ostream &         warning_stream(std::ostream & os = std::cerr);
+
+const char * const line_filler();
 
 int parse_user_input(int argc, char * argv[], boost::program_options::variables_map & vm);
 

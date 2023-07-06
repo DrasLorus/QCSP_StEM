@@ -180,9 +180,15 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     pthread_t         timer_tid = 0;
     pthread_create(&timer_tid, nullptr, &QCSP::timer_run, &timer_arg);
 
-    const double frame_time = 1 / prm.rate * 1e6 * double(conv_size);
-    const size_t min_size   = size_t(ceil(frame_time * 2));
-    const size_t true_delay = std::max(min_size, prm.inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
+    const double frame_latency = 1 / prm.rate * 1e6 * double(conv_size);
+    const size_t frame_us      = size_t(std::ceil(frame_latency));
+    const size_t true_delay    = prm.inter_delay > frame_us ? (prm.inter_delay - frame_us) : 0;
+    if (true_delay < frame_us) { // True inter delay should be 2 frames OR requested delay minus 1 frame
+        QCSP::warning_stream()
+            << "The delay of " << true_delay << " us between two successive frames does not allow reliable detection.\n"
+            << QCSP::line_filler() << "The minimum is " << frame_us << " us (sending time of a frame).\n"
+            << QCSP::line_filler() << "Specify an inter-delay of " << frame_us * 2 << " us to ensure reliable detection." << std::endl;
+    }
 
     bool       bCountNotReached = true;
     const bool stream_generator = (prm.gen_type == QCSP::GEN_CIN) || (prm.gen_type == QCSP::GEN_FILE);

@@ -276,3 +276,12 @@ void QCSP::parse_vm(const po::variables_map & vm, emitter_parameters & prm) {
     prm.cpu_format = vm.at("cpu-format").as<std::string>();
     prm.otw_format = vm.at("otw-format").as<std::string>();
 }
+
+std::ostream & QCSP::warning_stream(std::ostream & os) {
+    os << "\e[1;33m[WARNING]\e[0m ";
+    return os;
+}
+
+const char * const QCSP::line_filler() {
+    return "          ";
+}
