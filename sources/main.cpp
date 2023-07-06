@@ -138,7 +138,8 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     constexpr size_t qcsp_message_size = QCSP::CQCSPModulator::message_size();
     constexpr size_t qcsp_frame_size   = QCSP::CQCSPModulator::frame_size();
 
-    const size_t conv_size = qcsp_frame_size * 8 + (h_filter.size() - 1) * 2;
+    const size_t data_buffer_size = qcsp_frame_size * 8 + (h_filter.size() - 1) * 2;
+    const size_t conv_size        = 2U << unsigned(std::ceil(std::log2(float(data_buffer_size))));
 
     if (bool(file_frames)) {
         fwrite(&conv_size, sizeof(size_t), 1, file_frames);
@@ -154,7 +155,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::vector<std::complex<float>> frame_cpx(conv_size, 0);
     std::vector<std::complex<float>> filtered_data(conv_size, 0);
-    std::vector<std::complex<float>> buffer(conv_size, 0);
+    std::vector<std::complex<float>> buffer(data_buffer_size, 0);
 
     float * const ptr_raw_fdata  = (float *) filtered_data.data();
     float * const ptr_raw_buffer = (float *) buffer.data();
@@ -180,7 +181,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     pthread_t         timer_tid = 0;
     pthread_create(&timer_tid, nullptr, &QCSP::timer_run, &timer_arg);
 
-    const double frame_latency = 1 / prm.rate * 1e6 * double(conv_size);
+    const double frame_latency = 1 / prm.rate * 1e6 * double(data_buffer_size);
     const size_t frame_us      = size_t(std::ceil(frame_latency));
     const size_t true_delay    = prm.inter_delay > frame_us ? (prm.inter_delay - frame_us) : 0;
     if (true_delay < frame_us) { // True inter delay should be 2 frames OR requested delay minus 1 frame
@@ -216,7 +217,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         copy(frame_upsp_int8.begin(), frame_upsp_int8.begin() + conv_size, frame_cpx.begin());
 
         conv_engine->process(frame_cpx, filtered_data);
-        for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
+        for (size_t sz = 0; sz < data_buffer_size * 2; sz += 2) {
             static const float scaling = 5.f / float(conv_size);
             // Remove unnecessary imaginary parts introduced by FFT and add scaling
             ptr_raw_buffer[sz]     = ptr_raw_fdata[sz] * scaling;
@@ -230,7 +231,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         }
 
         if (bool(file_frames)) {
-            fwrite(ptr_raw_buffer, sizeof(float), conv_size * 2, file_frames);
+            fwrite(ptr_raw_buffer, sizeof(float), data_buffer_size * 2, file_frames);
         }
 
         std::this_thread::sleep_for(wait_time);
