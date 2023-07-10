@@ -11,7 +11,7 @@
 
 namespace QCSP {
 
-std::ostream &         warning_stream(std::ostream & os = std::cerr);
+std::ostream & warning_stream(std::ostream & os = std::cerr);
 
 const char * const line_filler();
 

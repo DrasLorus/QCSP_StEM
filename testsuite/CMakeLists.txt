@@ -81,7 +81,9 @@ add_custom_command (
   COMMAND_EXPAND_LISTS
 )
 
-add_custom_target (random_data_stdin_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files)
+add_custom_target (
+  random_data_stdin_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files
+)
 
 add_executable (random_data_stdin_comparator random_data_stdin_comparator.cc)
 if (LINUX)
@@ -115,7 +117,9 @@ add_custom_command (
   COMMAND_EXPAND_LISTS
 )
 
-add_custom_target (random_data_file_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files)
+add_custom_target (
+  random_data_file_test_files DEPENDS ${LOCAL_RESULT_FILE} random_data_archive_files
+)
 
 add_executable (random_data_file_comparator random_data_file_comparator.cc)
 if (LINUX)

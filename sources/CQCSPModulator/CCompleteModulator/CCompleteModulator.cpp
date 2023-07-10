@@ -107,3 +107,11 @@ QCSP::CCompleteModulator::CCompleteModulator(
     : pn_sequence(_pn),
       om_sequence(_om) {
 }
+
+void QCSP::CCompleteModulator::process(const std::vector<int> & input, std::vector<int> & output) {
+    std::vector<int> codeword(CQCSPModulator::N, 0);
+    std::vector<int> ccsk_frame(CQCSPModulator::frame_size(), 0);
+    encode(input, codeword);
+    modulate(codeword, ccsk_frame);
+    overmodulate(ccsk_frame, output);
+}

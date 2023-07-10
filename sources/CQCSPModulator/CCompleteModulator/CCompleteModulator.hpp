@@ -20,13 +20,7 @@ protected:
     virtual void overmodulate(const std::vector<int> & ccsk_frame, std::vector<int> & frame);
 
 public:
-    virtual void process(const std::vector<int> & input, std::vector<int> & output) override {
-        static std::vector<int> codeword(CQCSPModulator::N, 0);
-        static std::vector<int> ccsk_frame(CQCSPModulator::frame_size(), 0);
-        encode(input, codeword);
-        modulate(codeword, ccsk_frame);
-        overmodulate(ccsk_frame, output);
-    }
+    virtual void process(const std::vector<int> & input, std::vector<int> & output) override;
 
     CCompleteModulator(const std::vector<int> & _pn, const std::vector<int> & _om);
     virtual ~CCompleteModulator() = default;

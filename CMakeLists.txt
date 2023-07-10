@@ -18,6 +18,8 @@ option (ENABLE_TESTING "enable unit-testing with Catch2" OFF)
 
 option (ENABLE_MKL "enable use of intel MKL" OFF)
 
+option (ENABLE_PYTHON_API "enable build of Python APIusing pybind11" ON)
+
 # Find dependencies ###############################################################################
 find_package (UHD REQUIRED)
 find_package (Boost REQUIRED COMPONENTS program_options)
@@ -43,7 +45,7 @@ else ()
   )
 endif ()
 
-add_subdirectory (gps-nematode EXCLUDE_FROM_ALL)
+add_subdirectory (extern/gps-nematode EXCLUDE_FROM_ALL)
 add_compile_definitions (USE_NEMATODE=1)
 
 if (ENABLE_TESTING)
@@ -85,15 +87,36 @@ configure_file (
   ${CMAKE_SOURCE_DIR}/sources/CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp @ONLY
 )
 
-add_executable (
-  qcsp_standalone_emitter
-  sources/main.cpp
-  sources/threads/user_interface.cpp
-  sources/threads/timer.cpp
-  sources/utilities/conversions.cpp
-  sources/utilities/hmi_functions.cpp
-  sources/utilities/usrp_functions.cpp
-  sources/CFftEngine/CFftComplexEngine.cpp
+add_library (
+  qcsp_utils_obj OBJECT sources/utilities/conversions.cpp sources/utilities/hmi_functions.cpp
+                        sources/utilities/usrp_functions.cpp
+)
+target_include_directories (qcsp_utils_obj PUBLIC sources)
+target_include_directories (qcsp_utils_obj SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
+target_link_libraries (qcsp_utils_obj PUBLIC ${UHD_LIBRARIES})
+
+add_library (qcsp_fft_obj OBJECT sources/CFftEngine/CFftComplexEngine.cpp)
+if (ENABLE_MKL)
+  target_compile_options (qcsp_fft_obj PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
+  target_include_directories (
+    qcsp_fft_obj PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+  target_link_libraries (qcsp_fft_obj PUBLIC $<LINK_ONLY:MKL::MKL>)
+else ()
+  target_link_libraries (qcsp_fft_obj PUBLIC ${fftw} ${fftwf})
+endif ()
+
+add_library (
+  qcsp_modulator_obj OBJECT
+  sources/CQCSPModulator/CQCSPModulator.cpp
+  sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
+  sources/CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.cpp
+)
+target_include_directories (qcsp_modulator_obj PUBLIC sources)
+set_property (TARGET qcsp_modulator_obj PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+add_library (
+  qcsp_generator_obj OBJECT
   sources/CSymbolGenerator/CSymbolGenerator.cpp
   sources/CSymbolGenerator/CTimerGenerator/CTimerGenerator.cpp
   sources/CSymbolGenerator/CZeroGenerator/CZeroGenerator.cpp
@@ -101,38 +124,36 @@ add_executable (
   sources/CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.cpp
   sources/CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.cpp
   sources/CSymbolGenerator/CFileReaderGenerator/CFileReaderGenerator.cpp
-  sources/CQCSPModulator/CQCSPModulator.cpp
-  sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
-  sources/CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.cpp
 )
+target_include_directories (qcsp_generator_obj PUBLIC sources)
+target_include_directories (qcsp_generator_obj SYSTEM PUBLIC extern/gps-nematode/include)
+target_link_libraries (qcsp_generator_obj PUBLIC NemaTode qcsp_utils_obj)
 
+add_executable (
+  qcsp_standalone_emitter sources/main.cpp sources/threads/user_interface.cpp
+                          sources/threads/timer.cpp
+)
 target_include_directories (qcsp_standalone_emitter PUBLIC sources)
-target_include_directories (qcsp_standalone_emitter SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
-target_include_directories (qcsp_standalone_emitter SYSTEM PRIVATE gps-nematode/include)
-
 target_link_libraries (
   qcsp_standalone_emitter
-  PRIVATE ${UHD_LIBRARIES}
-          Boost::program_options
+  PRIVATE Boost::program_options
           matio
           Threads::Threads
+          qcsp_fft_obj
+          qcsp_utils_obj
+          qcsp_generator_obj
+          qcsp_modulator_obj
 )
-target_link_libraries (qcsp_standalone_emitter PRIVATE NemaTode)
-
-if (ENABLE_MKL)
-  target_compile_options (
-    qcsp_standalone_emitter PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>
-  )
-  target_include_directories (
-    qcsp_standalone_emitter PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>
-  )
-  target_link_libraries (qcsp_standalone_emitter PUBLIC $<LINK_ONLY:MKL::MKL>)
-else ()
-  target_link_libraries (qcsp_standalone_emitter PUBLIC fftw3f_threads ${fftw} ${fftwf})
-endif ()
 
 if (ENABLE_TESTING)
-  enable_testing()
+  enable_testing ()
   cmake_policy (SET CMP0110 NEW)
   add_subdirectory (testsuite)
+endif ()
+
+if (ENABLE_PYTHON_API)
+  find_package (Python3 COMPONENTS Interpreter Development)
+  add_subdirectory (extern/pybind11)
+
+  add_subdirectory (python)
 endif ()
