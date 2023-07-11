@@ -113,7 +113,6 @@ add_library (
   sources/CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.cpp
 )
 target_include_directories (qcsp_modulator_obj PUBLIC sources)
-set_property (TARGET qcsp_modulator_obj PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library (
   qcsp_generator_obj OBJECT
