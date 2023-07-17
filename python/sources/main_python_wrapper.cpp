@@ -45,14 +45,19 @@ public:
     ~PythonCompleteModulator() = default;
 };
 
-PYBIND11_MODULE(qcsp_stem, m) {
-    py::class_<PythonCompleteModulator>(m, "CompleteModulator")
+PYBIND11_MODULE(qcsp, m_qcsp) {
+    m_qcsp.doc() = "This is the top module for QCSP Python bindings.";
+
+    pybind11::module_ m_stem = m_qcsp.def_submodule("stem");
+    m_stem.doc() = "The QCSP Standalone Emitter (StEm)\n\nThis module contains functions to handle the transmitter.";
+
+    py::class_<PythonCompleteModulator>(m_stem, "CompleteModulator")
         .def(py::init<const std::vector<int> &,
                       const std::vector<int> &>())
         .def("process",
              py::overload_cast<const std::vector<int> &>(&PythonCompleteModulator::process),
              py::return_value_policy::take_ownership);
-    m.def("string_to_message",
+    m_stem.def("string_to_message",
           &python_bytes_to_int,
           py::return_value_policy::take_ownership);
 }
