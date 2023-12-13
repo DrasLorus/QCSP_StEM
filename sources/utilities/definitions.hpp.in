@@ -1,6 +1,10 @@
 #ifndef _DEFINITIONS_HPP_
 #define _DEFINITIONS_HPP_
 
+/**
+ * @brief Main namespace for the whole QCSP project
+ * 
+ */
 namespace QCSP {
 
 /**

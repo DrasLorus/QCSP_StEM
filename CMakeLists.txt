@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.16)
 
 # Configure Compiler ##############################################################################
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -97,7 +97,7 @@ target_include_directories (qcsp_utils_obj PUBLIC sources)
 target_include_directories (qcsp_utils_obj SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
 target_link_libraries (qcsp_utils_obj PUBLIC ${UHD_LIBRARIES})
 
-add_library (qcsp_fft_obj OBJECT sources/CFftEngine/CFftComplexEngine.cpp)
+add_library (qcsp_fft_obj OBJECT sources/CFftEngine/CFftwDftEngine.cpp)
 if (ENABLE_MKL)
   target_compile_options (qcsp_fft_obj PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
   target_include_directories (
