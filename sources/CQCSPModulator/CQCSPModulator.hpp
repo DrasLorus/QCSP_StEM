@@ -13,13 +13,17 @@ modulator_t mod_from_string(const std::string & in);
 
 /**
  * @brief Abstract class defining the interface for the QCSP modulator
- * 
+ *
  */
 class CQCSPModulator {
 public:
+    /// @brief bits per GF(_GF_) symbol
     static constexpr const unsigned p = QCSP::_LOG2GF_;
+    /// @brief chips per CCSK symbol (equals to _GF_)
     static constexpr const unsigned q = QCSP::_GF_;
+    /// @brief symbols per frame
     static constexpr const unsigned N = QCSP::_NSYMBOL_;
+    /// @brief information symbols per frame
     static constexpr const unsigned K = QCSP::_KSYMBOL_;
 
     /**

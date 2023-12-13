@@ -14,10 +14,19 @@ namespace QCSP {
  */
 class CByteReaderGenerator : public CSymbolGenerator {
 protected:
-    std::istream *            byte_stream;
+    /// @brief a byte stream
+    std::istream * byte_stream;
+    /// @brief minimum number of bytes in a message
     static constexpr unsigned nb_bytes = (CSymbolGenerator::K * CSymbolGenerator::p) / 8U;
-    std::vector<char>         buffer;
+    /// @brief Internal byte buffer
+    std::vector<char> buffer;
 
+    /**
+     * @brief Purely virtual method to require derivation
+     *
+     * @return true if byte_stream is usable
+     * @return false if bytestream is not usable
+     */
     virtual bool is_implemented() const = 0;
 
 public:
@@ -39,7 +48,12 @@ public:
 
     virtual void process(std::vector<int> & symbols) override;
 
+    /**
+     * @brief Construct a new CByteReaderGenerator object
+     *
+     */
     CByteReaderGenerator();
+    
     CByteReaderGenerator(const CByteReaderGenerator &) = delete;
     CByteReaderGenerator(CByteReaderGenerator &&)      = delete;
 
