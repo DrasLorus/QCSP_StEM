@@ -3,9 +3,28 @@
 
 namespace QCSP {
 
+/**
+ * @brief Number of bits per GF symbols
+ * 
+ */
 constexpr const unsigned _LOG2GF_  = @QCSP_GF_ORDER@;
+
+/**
+ * @brief Order of the Galois Field
+ * 
+ */
 constexpr const unsigned _GF_      = 1 << 6;
+
+/**
+ * @brief Number of symbols per frame 
+ * 
+ */
 constexpr const unsigned _NSYMBOL_ = @QCSP_N_SYMBOLS@;
+
+/**
+ * @brief Number of information symbols per frame
+ * 
+ */
 constexpr const unsigned _KSYMBOL_ = @QCSP_K_SYMBOLS@;
 
 } // namespace QCSP

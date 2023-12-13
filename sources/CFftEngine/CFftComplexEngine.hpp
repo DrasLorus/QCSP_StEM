@@ -11,6 +11,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief std::complex<float> specialization of CFftEngine
+ * 
+ */
 template <>
 class CFftEngine<std::complex<float>> : public CFftwRootEngine<float> {
     using base = CFftwRootEngine<float>;
@@ -44,6 +48,10 @@ public:
 
 // TFloat == double
 
+/**
+ * @brief std::complex<double> specialization of CFftEngine
+ * 
+ */
 template <>
 class CFftEngine<std::complex<double>> : public CFftwRootEngine<double> {
     using base = CFftwRootEngine<double>;
@@ -75,6 +83,10 @@ public:
 
 // TFloat == float
 
+/**
+ * @brief std::complex<float> specialization of CIFftEngine
+ * 
+ */
 template <>
 class CIfftEngine<std::complex<float>> : public CFftwRootEngine<float> {
     using base = CFftwRootEngine<float>;
@@ -107,6 +119,11 @@ public:
 
 // TFloat == double
 
+
+/**
+ * @brief std::complex<double> specialization of CIfftEngine
+ * 
+ */
 template <>
 class CIfftEngine<std::complex<double>> : public CFftwRootEngine<double> {
     using base = CFftwRootEngine<double>;

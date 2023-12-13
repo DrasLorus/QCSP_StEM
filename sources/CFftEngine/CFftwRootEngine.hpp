@@ -9,6 +9,11 @@
 
 namespace QCSP {
 
+/**
+ * @brief Abstract class defining an Interface to encapsulate calls to FFTW3
+ * 
+ * @tparam TFloat FLoating-point type 
+ */
 template <typename TFloat>
 class CFftwRootEngine {
 protected:

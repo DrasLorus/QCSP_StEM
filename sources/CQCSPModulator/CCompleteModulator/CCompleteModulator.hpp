@@ -9,6 +9,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief THe reference implementation of a complete working QCSP modulator
+ * 
+ */
 class CCompleteModulator : public CQCSPModulator {
 private:
     const std::vector<int> pn_sequence;
@@ -22,7 +26,18 @@ protected:
 public:
     virtual void process(const std::vector<int> & input, std::vector<int> & output) override;
 
+    /**
+    * @brief Construct a new CCompleteModulator object
+    * 
+    * @param _pn 
+    * @param _om 
+    */
     CCompleteModulator(const std::vector<int> & _pn, const std::vector<int> & _om);
+    
+    /**
+     * @brief Destroy the CCompleteModulator object
+     * 
+     */
     virtual ~CCompleteModulator() = default;
 };
 

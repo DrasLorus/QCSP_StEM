@@ -5,6 +5,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Define the different possible generators
+ * 
+ */
 typedef enum {
     GEN_UNKNOW,
     // GEN_RANDOM,
@@ -15,6 +19,10 @@ typedef enum {
     GEN_CIN
 } generator_t;
 
+/**
+ * @brief Define the different possible modulators
+ * 
+ */
 typedef enum {
     MOD_UNKNOW,
     MOD_NOPC,
@@ -22,6 +30,10 @@ typedef enum {
     MOD_REAL
 } modulator_t;
 
+/**
+ * @brief Helper structure containing emitter settings  
+ * 
+ */
 struct emitter_parameters {
     std::string device_args;
     std::string ant;

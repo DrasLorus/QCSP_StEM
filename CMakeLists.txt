@@ -6,7 +6,7 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project (QCSP_Standalone_Emitter LANGUAGES CXX)
+project (QCSP_StEM LANGUAGES CXX)
 
 # Options #########################################################################################
 option (UNSAFE_OPTIMIZATION "enable unsafe flags" OFF)
@@ -19,6 +19,8 @@ option (ENABLE_TESTING "enable unit-testing with Catch2" OFF)
 option (ENABLE_MKL "enable use of intel MKL" OFF)
 
 option (ENABLE_PYTHON_API "enable build of Python APIusing pybind11" ON)
+
+option (ENABLE_DOCUMENTATION "enable build of Doxygen documentation" ON)
 
 # Find dependencies ###############################################################################
 find_package (UHD REQUIRED)
@@ -155,4 +157,8 @@ if (ENABLE_PYTHON_API)
   add_subdirectory (extern/pybind11)
 
   add_subdirectory (python)
+endif ()
+
+if (ENABLE_DOCUMENTATION)
+  add_subdirectory (documentation)
 endif ()

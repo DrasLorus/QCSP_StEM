@@ -8,6 +8,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Abstract class defining a high level interface to handle byte streams
+ *
+ */
 class CByteReaderGenerator : public CSymbolGenerator {
 protected:
     std::istream *            byte_stream;
@@ -17,7 +21,20 @@ protected:
     virtual bool is_implemented() const = 0;
 
 public:
+    /**
+     * @brief return the state of the underlying stream
+     *
+     * @return true
+     * @return false
+     */
     bool good() const { return this->byte_stream->good(); }
+
+    /**
+     * @brief return the EOF state of the underlying stream
+     *
+     * @return true
+     * @return false
+     */
     bool eof() const { return this->byte_stream->eof(); }
 
     virtual void process(std::vector<int> & symbols) override;

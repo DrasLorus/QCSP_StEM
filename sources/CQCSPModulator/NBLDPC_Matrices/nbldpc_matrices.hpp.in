@@ -1,7 +1,18 @@
+/**
+ * @file nbldpc_matrices.hpp
+ * @author Camille Monière (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-13
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef _QCSP_NBLDPC_MATRICES_HPP_
 #define _QCSP_NBLDPC_MATRICES_HPP_
 
-/** NOTE - Why suppressing warnings
+/** 
+ * @note Why suppressing warnings
  * These headers are not used directly but must be as-is, for the configuration mechanism to work.
  */
 

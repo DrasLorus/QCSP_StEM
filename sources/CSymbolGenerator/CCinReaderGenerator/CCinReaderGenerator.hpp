@@ -9,6 +9,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Implement a CByteReaderGenerator specialized in reading the standard input stream
+ * 
+ */
 class CCinReaderGenerator : public CByteReaderGenerator {
 protected:
     virtual bool is_implemented() const final { return true; };

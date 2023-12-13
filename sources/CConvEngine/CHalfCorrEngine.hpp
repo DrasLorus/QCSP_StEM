@@ -7,6 +7,11 @@
 
 namespace QCSP {
 
+/**
+ * @brief Define a half-sized correlation engine based on FFTW3
+ * 
+ * @tparam TFloat floating-point type
+ */
 template <class TFloat>
 class CHalfCorrEngine {
     static_assert(std::is_floating_point<TFloat>(), "CHalfCorrEngine TFloat have to be a floating-point scalar type.");

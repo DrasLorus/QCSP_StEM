@@ -11,6 +11,11 @@
 
 namespace QCSP {
 
+/**
+ * @brief An helper class to process FFT using FFTW
+ * 
+ * @tparam TFloat floating-point type
+ */
 template <typename TFloat>
 class CFftEngine : public CFftwRootEngine<TFloat> {
     using real_t         = TFloat;
@@ -25,6 +30,11 @@ public:
     virtual ~CFftEngine();
 };
 
+/**
+ * @brief An helper class to process IFFT using FFTW
+ * 
+ * @tparam TFloat floating-point type
+ */
 template <typename TFloat>
 class CIfftEngine : public CFftwRootEngine<TFloat> {
     using real_t         = TFloat;

@@ -11,6 +11,10 @@ namespace QCSP {
 
 modulator_t mod_from_string(const std::string & in);
 
+/**
+ * @brief Abstract class defining the interface for the QCSP modulator
+ * 
+ */
 class CQCSPModulator {
 public:
     static constexpr const unsigned p = QCSP::_LOG2GF_;
@@ -60,6 +64,12 @@ public:
      */
     static constexpr std::size_t frame_size() { return N * q; }
 
+    /**
+     * @brief Execute the modulator on input, resulting in the frame output
+     *
+     * @param input generated symbols
+     * @param output modulated frame
+     */
     virtual void process(const std::vector<int> & input, std::vector<int> & output) = 0;
 };
 

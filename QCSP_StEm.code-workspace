@@ -4,7 +4,12 @@
       "path": "."
     }
   ],
-  "settings": {},
+  "settings": {
+    "cmake.configureOnOpen": true,
+    "cmake.configureArgs": [
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+    ]
+  },
   "launch": {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
