@@ -1,3 +1,13 @@
+/**
+ * @file CFftComplexEngine.hpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef _FFT_COMPLEX_ENGINE_HPP_
 #define _FFT_COMPLEX_ENGINE_HPP_
 
@@ -7,13 +17,23 @@
 #include <fftw3.h>
 #include <vector>
 
-#include "./CFftwDftEngine.hpp"
+#include "CFftEngine/CFftwDftEngine.hpp"
 
 namespace QCSP {
 
+/**
+ * @brief Alias class for Complex FFT
+ * 
+ * @tparam TFloat 
+ */
 template <class TFloat>
 using CFftComplexEngine = CFftwDftEngine<TFloat, true>;
 
+/**
+ * @brief Alias class for Complex IFFT
+ * 
+ * @tparam TFloat 
+ */
 template <class TFloat>
 using CIfftComplexEngine = CFftwDftEngine<TFloat, false>;
 

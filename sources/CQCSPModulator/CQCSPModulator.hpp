@@ -9,6 +9,12 @@
 
 namespace QCSP {
 
+/**
+ * @brief helper function to retrieve a modulator_t from a std::string
+ * 
+ * @param in moulator string
+ * @return QCSP::modulator_t a modulator type
+ */
 modulator_t mod_from_string(const std::string & in);
 
 /**

@@ -1,3 +1,14 @@
+/**
+ * @internal
+ * @file conversions.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include "utilities/conversions.hpp"
 
 #include <cassert>

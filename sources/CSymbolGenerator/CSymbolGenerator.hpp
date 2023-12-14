@@ -23,7 +23,7 @@ namespace QCSP {
  * @brief Helper funtion to get a generator type from a string
  * 
  * @param in a generator string
- * @return generator_t a type of generator
+ * @return QCSP::generator_t a type of generator
  */
 generator_t gen_from_string(const std::string & in);
 

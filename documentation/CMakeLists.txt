@@ -11,6 +11,7 @@ if (DOXYGEN_FOUND AND ENABLE_DOCUMENTATION)
   set (DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
   set (DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
   set (DOXYGEN_STRIP_FROM_PATH ${CMAKE_SOURCE_DIR}/)
+  file (GLOB_RECURSE DOXY_DEPS ${CMAKE_SOURCE_DIR}/sources/*.?pp)
   # Generate DoxyFile from the input file.
   configure_file (${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
   # Create Output directory.
@@ -20,7 +21,7 @@ if (DOXYGEN_FOUND AND ENABLE_DOCUMENTATION)
     OUTPUT ${DOXYGEN_INDEX_FILE}
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
     MAIN_DEPENDENCY ${DOXYFILE_OUT}
-    DEPENDS qcsp_standalone_emitter
+    DEPENDS ${DOXY_DEPS}
     ${DOXYFILE_IN}
     COMMENT "Generating Doxygen documentation"
     VERBATIM
