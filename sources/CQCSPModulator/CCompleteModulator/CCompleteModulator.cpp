@@ -58,7 +58,7 @@ void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vec
     for (int n = 0; n < CQCSPModulator::N; n++) {
         assert(NSYMB[n] < CQCSPModulator::pn_size());
         assert(NSYMB[n] >= 0);
-        CODEWD[QCSP::GF_PERM[n]] = NSYMB[n];
+        CODEWD[QCSP::GF_PERM[n]] = QCSP::GF_S2N[NSYMB[n]]; // Use natural representation
     }
 
 #if (defined(DEBUG) && (defined(SHUNT_ENCODER)))
@@ -93,10 +93,10 @@ void QCSP::CCompleteModulator::modulate(const std::vector<int> & codeword, std::
 }
 
 void QCSP::CCompleteModulator::overmodulate(const std::vector<int> & ccsk_frame, std::vector<int> & frame) {
-    for (int i = 0; i < CQCSPModulator::N; i++) {
-        for (int j = 0; j < CQCSPModulator::q; j++) {
-            const int idx = i * CQCSPModulator::q + j;
-            frame[idx]    = ccsk_frame[idx] * this->om_sequence[i];
+    for (unsigned symbol_idx = 0; symbol_idx < CQCSPModulator::N; symbol_idx++) {
+        for (unsigned chip_idx = 0; chip_idx < CQCSPModulator::q; chip_idx++) {
+            const unsigned idx = symbol_idx * CQCSPModulator::q + chip_idx;
+            frame[idx]         = ccsk_frame[idx] * this->om_sequence[symbol_idx];
         }
     }
 }
@@ -106,4 +106,12 @@ QCSP::CCompleteModulator::CCompleteModulator(
     const std::vector<int> & _om)
     : pn_sequence(_pn),
       om_sequence(_om) {
+}
+
+void QCSP::CCompleteModulator::process(const std::vector<int> & input, std::vector<int> & output) {
+    std::vector<int> codeword(CQCSPModulator::N, 0);
+    std::vector<int> ccsk_frame(CQCSPModulator::frame_size(), 0);
+    encode(input, codeword);
+    modulate(codeword, ccsk_frame);
+    overmodulate(ccsk_frame, output);
 }

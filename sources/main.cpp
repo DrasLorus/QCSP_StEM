@@ -29,7 +29,11 @@
 
 #include "CConvEngine/CHalfCorrEngine.hpp"
 #include "CQCSPModulator/CCompleteModulator/CCompleteModulator.hpp"
+#include "CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.hpp"
 #include "CQCSPModulator/CQCSPModulator.hpp"
+#include "CSymbolGenerator/CByteReaderGenerator/CByteReaderGenerator.hpp"
+#include "CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.hpp"
+#include "CSymbolGenerator/CFileReaderGenerator/CFileReaderGenerator.hpp"
 #include "CSymbolGenerator/CGPSGenerator/CGPSGenerator.hpp"
 #include "CSymbolGenerator/CTimerGenerator/CTimerGenerator.hpp"
 #include "CSymbolGenerator/CZeroGenerator/CZeroGenerator.hpp"
@@ -61,8 +65,7 @@ void upsample8(const Tin * __restrict in, Tout * __restrict out) {
 
 int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
-    uhd::set_thread_priority_safe();
-
+    // uhd::set_thread_priority_safe();
     po::variables_map        vm;
     QCSP::emitter_parameters prm;
 
@@ -72,10 +75,10 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     QCSP::parse_vm(vm, prm);
 
-    uhd::usrp::multi_usrp::sptr emitter_usrp;
+    uhd::usrp::multi_usrp::sptr usrp_transmitter;
     uhd::tx_streamer::sptr      send_stream;
     if (!prm.to_file) {
-        QCSP::init_usrp(prm, emitter_usrp, send_stream);
+        QCSP::init_usrp(prm, usrp_transmitter, send_stream);
     }
 
     FILE * file_frames = nullptr;
@@ -105,6 +108,12 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         case QCSP::GEN_GPS:
             generator = std::make_shared<QCSP::CGPSGenerator>(prm.gps_tty, false, true);
             break;
+        case QCSP::GEN_FILE:
+            generator = std::make_shared<QCSP::CFileReaderGenerator>(prm.input_file);
+            break;
+        case QCSP::GEN_CIN:
+            generator = std::make_shared<QCSP::CCinReaderGenerator>();
+            break;
         default:
             std::cerr << "Error: generator type is unknown." << std::endl;
             exit(EXIT_FAILURE);
@@ -112,12 +121,12 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::shared_ptr<QCSP::CQCSPModulator> modulator;
     switch (prm.mod_type) {
-        // case QCSP::MOD_FAKE:
-        //     generator = std::make_shared<CTimeTransmitter>(n_frame, n_s);
-        //     break;
         // case QCSP::MOD_ZERO:
         //     generator = std::make_shared<CZeroTransmitter>(n_frame, n_s);
         //     break;
+        case QCSP::MOD_NOPC:
+            modulator = std::make_shared<QCSP::CFakeEncoderModulator>(pn, best_N);
+            break;
         case QCSP::MOD_REAL:
             modulator = std::make_shared<QCSP::CCompleteModulator>(pn, best_N);
             break;
@@ -129,7 +138,8 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     constexpr size_t qcsp_message_size = QCSP::CQCSPModulator::message_size();
     constexpr size_t qcsp_frame_size   = QCSP::CQCSPModulator::frame_size();
 
-    const size_t conv_size = qcsp_frame_size * 8 + (h_filter.size() - 1) * 2;
+    const size_t data_buffer_size = qcsp_frame_size * 8 + (h_filter.size() - 1) * 2;
+    const size_t conv_size        = 2U << unsigned(std::ceil(std::log2(float(data_buffer_size))));
 
     if (bool(file_frames)) {
         fwrite(&conv_size, sizeof(size_t), 1, file_frames);
@@ -145,7 +155,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::vector<std::complex<float>> frame_cpx(conv_size, 0);
     std::vector<std::complex<float>> filtered_data(conv_size, 0);
-    std::vector<std::complex<float>> buffer(conv_size, 0);
+    std::vector<std::complex<float>> buffer(data_buffer_size, 0);
 
     float * const ptr_raw_fdata  = (float *) filtered_data.data();
     float * const ptr_raw_buffer = (float *) buffer.data();
@@ -161,6 +171,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     std::atomic<bool> bRunning(true);
     std::atomic<bool> bTimeNotReached(true);
+    std::atomic<bool> bGood(true);
 
     QCSP::ui_arg_t ui_arg = {std::ref(bRunning), prm.no_ui};
     pthread_t      ui_tid = 0;
@@ -170,17 +181,30 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     pthread_t         timer_tid = 0;
     pthread_create(&timer_tid, nullptr, &QCSP::timer_run, &timer_arg);
 
-    const double frame_time = 1 / prm.rate * 1e6 * double(conv_size);
-    const size_t min_size   = size_t(ceil(frame_time * 2));
-    const size_t true_delay = std::max(min_size, prm.inter_delay - conv_size); // True inter delay is 2 frames OR requested delay minus 1 frame
+    const double frame_latency = 1 / prm.rate * 1e6 * double(data_buffer_size);
+    const size_t frame_us      = size_t(std::ceil(frame_latency));
+    const size_t true_delay    = prm.inter_delay > frame_us ? (prm.inter_delay - frame_us) : 0;
+    if (true_delay < frame_us) { // True inter delay should be 2 frames OR requested delay minus 1 frame
+        QCSP::warning_stream()
+            << "The delay of " << true_delay << " us between two successive frames does not allow reliable detection.\n"
+            << QCSP::line_filler() << "The minimum is " << frame_us << " us (sending time of a frame).\n"
+            << QCSP::line_filler() << "Specify an inter-delay of " << frame_us * 2 << " us to ensure reliable detection." << std::endl;
+    }
 
-    bool bCountNotReached = true;
+    bool       bCountNotReached = true;
+    const bool stream_generator = (prm.gen_type == QCSP::GEN_CIN) || (prm.gen_type == QCSP::GEN_FILE);
 
     const std::chrono::microseconds wait_time = std::chrono::microseconds(true_delay);
 
-    while (bRunning && bCountNotReached && bTimeNotReached) {
+    while (bRunning && bCountNotReached && bTimeNotReached && bGood) {
 
         generator->process(message);
+        if (stream_generator) {
+            bGood = static_cast<const QCSP::CByteReaderGenerator *>(generator.get())->good();
+            if (!bGood) {
+                break;
+            }
+        }
         modulator->process(message, qcsp_frame);
 
         // std::cout << std::endl;
@@ -193,7 +217,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         copy(frame_upsp_int8.begin(), frame_upsp_int8.begin() + conv_size, frame_cpx.begin());
 
         conv_engine->process(frame_cpx, filtered_data);
-        for (size_t sz = 0; sz < conv_size * 2; sz += 2) {
+        for (size_t sz = 0; sz < data_buffer_size * 2; sz += 2) {
             static const float scaling = 5.f / float(conv_size);
             // Remove unnecessary imaginary parts introduced by FFT and add scaling
             ptr_raw_buffer[sz]     = ptr_raw_fdata[sz] * scaling;
@@ -201,19 +225,27 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
         }
 
         if (prm.to_file) {
-            QCSP::write_to_file<std::complex<float>>("dump_file.bin", buffer);
+            QCSP::write_to_file<std::complex<float>>(prm.output_file, buffer);
         } else {
             QCSP::send_from_memory<std::complex<float>>(send_stream, buffer);
         }
 
         if (bool(file_frames)) {
-            fwrite(ptr_raw_buffer, sizeof(float), conv_size * 2, file_frames);
+            fwrite(ptr_raw_buffer, sizeof(float), data_buffer_size * 2, file_frames);
         }
 
         std::this_thread::sleep_for(wait_time);
 
         const bool tmp_cond = ++cnt < prm.max_count;
         bCountNotReached    = (prm.count_limited ? tmp_cond : true);
+    }
+
+    if (!bGood && stream_generator) {
+        if (static_cast<const QCSP::CByteReaderGenerator *>(generator.get())->eof()) {
+            std::cout << "End of file reached." << std::endl;
+        } else {
+            std::cout << "Unknown error encountered with the input." << std::endl;
+        }
     }
 
     if (!bCountNotReached) {

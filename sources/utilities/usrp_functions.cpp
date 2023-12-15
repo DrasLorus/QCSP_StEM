@@ -1,3 +1,13 @@
+/**
+ * @file usrp_functions.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <boost/program_options/variables_map.hpp>
 #include <fstream>
 #include <iomanip>
@@ -71,45 +81,48 @@ void check_usrp(uhd::device_addr_t device_args = std::string("")) {
     std::cout << std::endl;
 }
 
+/// @internal @brief alias for boost::program_options::variables_map 
 using vm_t     = po::variables_map;
+/// @internal @brief alias for uhd::usrp::multi_usrp::sptr
 using p_usrp_t = uhd::usrp::multi_usrp::sptr;
+/// @internal @brief alias for uhd::tx_streamer::sptr
 using p_tx_t   = uhd::tx_streamer::sptr;
 
 void init_usrp(const emitter_parameters & prm,
-               p_usrp_t &                 emitter_usrp,
+               p_usrp_t &                 usrp_transmitter,
                p_tx_t &                   send_stream) {
-    emitter_usrp = uhd::usrp::multi_usrp::make(prm.device_args);
+    usrp_transmitter = uhd::usrp::multi_usrp::make(prm.device_args);
 
     if (prm.has_clock_source) {
-        emitter_usrp->set_clock_source(prm.clock_source);
+        usrp_transmitter->set_clock_source(prm.clock_source);
     }
 
     if (prm.has_subdev) {
-        emitter_usrp->set_tx_subdev_spec(prm.subdev);
+        usrp_transmitter->set_tx_subdev_spec(prm.subdev);
     }
 
-    emitter_usrp->set_tx_antenna(prm.ant);
+    usrp_transmitter->set_tx_antenna(prm.ant);
 
-    emitter_usrp->set_tx_rate(prm.rate);
-    emitter_usrp->set_tx_freq(prm.freq);
-    emitter_usrp->set_tx_gain(prm.gain);
+    usrp_transmitter->set_tx_rate(prm.rate);
+    usrp_transmitter->set_tx_freq(prm.freq);
+    usrp_transmitter->set_tx_gain(prm.gain);
     if (prm.has_bandwidth) {
-        emitter_usrp->set_tx_bandwidth(prm.bandwidth);
+        usrp_transmitter->set_tx_bandwidth(prm.bandwidth);
     }
 
-    emitter_usrp->set_time_now(0.0);
+    usrp_transmitter->set_time_now(0.0);
     const int prec = std::cout.precision();
-    std::cout << "Using " << emitter_usrp->get_pp_string()
-              << "\n  Antenna:    " << emitter_usrp->get_tx_antenna()
-              << "\n  Rate (Msps):      " << std::setprecision(7) << emitter_usrp->get_tx_rate() * 1e-6
-              << "\n  Frequency (MHz):  " << std::setprecision(7) << emitter_usrp->get_tx_freq() * 1e-6
-              << "\n  Bandwidth (MHz):  " << std::setprecision(7) << emitter_usrp->get_tx_freq() * 1e-6
-              << "\n  Gain (dB):        " << std::setprecision(7) << emitter_usrp->get_tx_gain()
+    std::cout << "Using " << usrp_transmitter->get_pp_string()
+              << "\n  Antenna:    " << usrp_transmitter->get_tx_antenna()
+              << "\n  Rate (Msps):      " << std::setprecision(7) << usrp_transmitter->get_tx_rate() * 1e-6
+              << "\n  Frequency (MHz):  " << std::setprecision(7) << usrp_transmitter->get_tx_freq() * 1e-6
+              << "\n  Bandwidth (MHz):  " << std::setprecision(7) << usrp_transmitter->get_tx_freq() * 1e-6
+              << "\n  Gain (dB):        " << std::setprecision(7) << usrp_transmitter->get_tx_gain()
               << std::endl;
     std::cout.precision(prec);
 
     uhd::stream_args_t stream_args(prm.cpu_format, prm.otw_format);
-    send_stream = emitter_usrp->get_tx_stream(stream_args);
+    send_stream = usrp_transmitter->get_tx_stream(stream_args);
 }
 
 } // namespace QCSP

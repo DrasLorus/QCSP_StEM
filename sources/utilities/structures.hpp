@@ -5,21 +5,35 @@
 
 namespace QCSP {
 
+/**
+ * @brief Define the different possible generators
+ * 
+ */
 typedef enum {
     GEN_UNKNOW,
     // GEN_RANDOM,
     GEN_TIMER,
     GEN_ZERO,
-    GEN_GPS
+    GEN_GPS,
+    GEN_FILE,
+    GEN_CIN
 } generator_t;
 
+/**
+ * @brief Define the different possible modulators
+ * 
+ */
 typedef enum {
     MOD_UNKNOW,
-    // MOD_FAKE,
+    MOD_NOPC,
     // MOD_ZERO,
     MOD_REAL
 } modulator_t;
 
+/**
+ * @brief Helper structure containing emitter settings  
+ * 
+ */
 struct emitter_parameters {
     std::string device_args;
     std::string ant;
@@ -32,11 +46,13 @@ struct emitter_parameters {
     double      ttl_us;
     bool        time_limited;
     bool        to_file;
+    std::string output_file;
     bool        save_frames;
     bool        no_ui;
     generator_t gen_type;
     modulator_t mod_type;
     std::string gps_tty;
+    std::string input_file;
     bool        has_clock_source;
     std::string clock_source;
     bool        has_subdev;

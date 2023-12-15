@@ -7,6 +7,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Generate null frames
+ * 
+ */
 class CZeroGenerator : public CSymbolGenerator {
 public:
     virtual void process(std::vector<int> & symbols) override;
