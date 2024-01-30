@@ -1,3 +1,13 @@
+/**
+ * @file usrp_functions.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <boost/program_options/variables_map.hpp>
 #include <fstream>
 #include <iomanip>
@@ -71,8 +81,11 @@ void check_usrp(uhd::device_addr_t device_args = std::string("")) {
     std::cout << std::endl;
 }
 
+/// @internal @brief alias for boost::program_options::variables_map 
 using vm_t     = po::variables_map;
+/// @internal @brief alias for uhd::usrp::multi_usrp::sptr
 using p_usrp_t = uhd::usrp::multi_usrp::sptr;
+/// @internal @brief alias for uhd::tx_streamer::sptr
 using p_tx_t   = uhd::tx_streamer::sptr;
 
 void init_usrp(const emitter_parameters & prm,

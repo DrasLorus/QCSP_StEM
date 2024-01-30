@@ -14,6 +14,7 @@
 #include "./hmi_functions.hpp"
 #include "./usrp_functions.hpp"
 
+/// @brief Just an alias for boost::program_options 
 namespace po = boost::program_options;
 
 #define USAGE(desc) "Usage: qcsp_standalone_emitter <rate> <freq> <gain> <antenna> [options]\n"           \
@@ -40,7 +41,7 @@ void throw_if(bool condition, Exception && e) {
 
 } // namespace
 
-int QCSP::parse_user_input(int argc, char * argv[], po::variables_map & vm) {
+int QCSP::parse_user_input(int argc, char * argv[], boost::program_options::variables_map & vm) {
 
     po::options_description desc;
     desc.add_options()(
@@ -199,7 +200,7 @@ void QCSP::load_settings(
     exit_if(Mat_Close(mat_params), "Error closing " + filename);
 }
 
-void QCSP::parse_vm(const po::variables_map & vm, emitter_parameters & prm) {
+void QCSP::parse_vm(const boost::program_options::variables_map & vm, emitter_parameters & prm) {
     prm.device_args = vm.at("device").as<std::string>();
     prm.ant         = vm.at("antenna").as<std::string>();
 

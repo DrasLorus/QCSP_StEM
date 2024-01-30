@@ -9,6 +9,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Implement a CByteReaderGenerator specialized in reading file stream
+ * 
+ */
 class CFileReaderGenerator : public CByteReaderGenerator {
 protected:
     std::ifstream * file_stream() const { return static_cast<std::ifstream *>(byte_stream); }

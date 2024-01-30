@@ -1,3 +1,13 @@
+/**
+ * @file CFftComplexEngine.hpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-12-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef _FFT_COMPLEX_ENGINE_HPP_
 #define _FFT_COMPLEX_ENGINE_HPP_
 
@@ -7,142 +17,25 @@
 #include <fftw3.h>
 #include <vector>
 
-#include "./CFftTemplateEngine.hpp"
+#include "CFftEngine/CFftwDftEngine.hpp"
 
 namespace QCSP {
 
-template <>
-class CFftEngine<std::complex<float>> : public CFftwRootEngine<float> {
-    using base = CFftwRootEngine<float>;
-
-    using real_t         = float;
-    using complex_t      = std::complex<float>;
-    using complex_vector = std::vector<complex_t>;
-
-private:
-    const size_t fft_size;
-
-    fftwf_plan      plan_fft;
-    fftwf_complex * ptr_in;
-    fftwf_complex * ptr_out;
-
-    const unsigned int fftw_plan_strat;
-
-    void set_fftw();
-
-    void clear_fftw();
-
-public:
-    size_t size() const;
-
-    virtual void process(const complex_vector & input, complex_vector & output) override;
-
-    CFftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
-
-    virtual ~CFftEngine();
-};
-
-// TFloat == double
-
-template <>
-class CFftEngine<std::complex<double>> : public CFftwRootEngine<double> {
-    using base = CFftwRootEngine<double>;
-
-    using real_t         = double;
-    using complex_t      = std::complex<double>;
-    using complex_vector = std::vector<complex_t>;
-
-private:
-    const size_t fft_size;
-
-    fftw_plan      plan_fft;
-    fftw_complex * ptr_in;
-    fftw_complex * ptr_out;
-
-    const unsigned int fftw_plan_strat;
-
-    void set_fftw();
-    void clear_fftw();
-
-public:
-    size_t size() const;
-
-    virtual void process(const complex_vector & input, complex_vector & output) override;
-
-    CFftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
-    virtual ~CFftEngine();
-};
-
-// TFloat == float
-
-template <>
-class CIfftEngine<std::complex<float>> : public CFftwRootEngine<float> {
-    using base = CFftwRootEngine<float>;
-
-    using real_t         = float;
-    using complex_t      = std::complex<float>;
-    using complex_vector = std::vector<complex_t>;
-
-private:
-    const size_t fft_size;
-
-    fftwf_plan      plan_ifft;
-    fftwf_complex * ptr_in;
-    fftwf_complex * ptr_out;
-
-    const unsigned int fftw_plan_strat;
-
-    void set_fftw();
-    void clear_fftw();
-
-public:
-    size_t size() const;
-
-    virtual void process(const complex_vector & input, complex_vector & output) override;
-
-    CIfftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
-
-    virtual ~CIfftEngine();
-};
-
-// TFloat == double
-
-template <>
-class CIfftEngine<std::complex<double>> : public CFftwRootEngine<double> {
-    using base = CFftwRootEngine<double>;
-
-    using real_t         = double;
-    using complex_t      = std::complex<double>;
-    using complex_vector = std::vector<complex_t>;
-
-private:
-    const size_t fft_size;
-
-    fftw_plan      plan_ifft;
-    fftw_complex * ptr_in;
-    fftw_complex * ptr_out;
-
-    const unsigned int fftw_plan_strat;
-
-    void set_fftw();
-
-    void clear_fftw();
-
-public:
-    size_t size() const;
-
-    virtual void process(const complex_vector & input, complex_vector & output) override;
-
-    CIfftEngine(size_t size, unsigned plan_strategy = FFTW_MEASURE);
-
-    virtual ~CIfftEngine();
-};
-
+/**
+ * @brief Alias class for Complex FFT
+ * 
+ * @tparam TFloat 
+ */
 template <class TFloat>
-using CFftComplexEngine = CFftEngine<std::complex<TFloat>>;
+using CFftComplexEngine = CFftwDftEngine<TFloat, true>;
 
+/**
+ * @brief Alias class for Complex IFFT
+ * 
+ * @tparam TFloat 
+ */
 template <class TFloat>
-using CIfftComplexEngine = CIfftEngine<std::complex<TFloat>>;
+using CIfftComplexEngine = CFftwDftEngine<TFloat, false>;
 
 } // namespace QCSP
 

@@ -24,6 +24,10 @@
 
 namespace QCSP {
 
+/**
+ * @brief Generate message from SoC data and GPS data
+ * 
+ */
 class CGPSGenerator : public CSymbolGenerator {
 private:
     nmea::NMEAParser * _parser;

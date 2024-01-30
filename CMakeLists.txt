@@ -1,12 +1,12 @@
 cmake_minimum_required (VERSION 3.16)
 
 # Configure Compiler ##############################################################################
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project (QCSP_Standalone_Emitter LANGUAGES CXX)
+project (QCSP_StEM LANGUAGES CXX)
 
 # Options #########################################################################################
 option (UNSAFE_OPTIMIZATION "enable unsafe flags" OFF)
@@ -19,6 +19,8 @@ option (ENABLE_TESTING "enable unit-testing with Catch2" OFF)
 option (ENABLE_MKL "enable use of intel MKL" OFF)
 
 option (ENABLE_PYTHON_API "enable build of Python APIusing pybind11" ON)
+
+option (ENABLE_DOCUMENTATION "enable build of Doxygen documentation" ON)
 
 # Find dependencies ###############################################################################
 find_package (UHD REQUIRED)
@@ -95,7 +97,8 @@ target_include_directories (qcsp_utils_obj PUBLIC sources)
 target_include_directories (qcsp_utils_obj SYSTEM PUBLIC ${UHD_INCLUDE_DIRS})
 target_link_libraries (qcsp_utils_obj PUBLIC ${UHD_LIBRARIES})
 
-add_library (qcsp_fft_obj OBJECT sources/CFftEngine/CFftComplexEngine.cpp)
+add_library (qcsp_fft_obj OBJECT sources/CFftEngine/CFftwDftEngine.cpp sources/CConvEngine/CHalfCorrEngine.cpp)
+target_include_directories (qcsp_fft_obj PUBLIC sources)
 if (ENABLE_MKL)
   target_compile_options (qcsp_fft_obj PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
   target_include_directories (
@@ -155,4 +158,8 @@ if (ENABLE_PYTHON_API)
   add_subdirectory (extern/pybind11)
 
   add_subdirectory (python)
+endif ()
+
+if (ENABLE_DOCUMENTATION)
+  add_subdirectory (documentation)
 endif ()
