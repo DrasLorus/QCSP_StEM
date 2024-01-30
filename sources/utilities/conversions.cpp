@@ -44,8 +44,8 @@ void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & out
 
             bits_to_write  = nb_bits; // New output_ptr[sbl_index] need full symbol
             remaining_bits = bit_offset;
-            assert(remaining_bits < nb_bits);
         }
+        assert(remaining_bits < nb_bits);
 
         if (remaining_bits != 0) {
             const uint8_t offset = nb_bits - remaining_bits;
