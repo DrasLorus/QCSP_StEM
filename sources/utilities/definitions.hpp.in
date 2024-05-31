@@ -17,7 +17,7 @@ constexpr const unsigned _LOG2GF_  = @QCSP_GF_ORDER@;
  * @brief Order of the Galois Field
  * 
  */
-constexpr const unsigned _GF_      = 1 << 6;
+constexpr const unsigned _GF_      = 1 << _LOG2GF_;
 
 /**
  * @brief Number of symbols per frame 
@@ -30,6 +30,12 @@ constexpr const unsigned _NSYMBOL_ = @QCSP_N_SYMBOLS@;
  * 
  */
 constexpr const unsigned _KSYMBOL_ = @QCSP_K_SYMBOLS@;
+
+/**
+ * @brief Number of redundancy symbols per frame
+ * 
+ */
+constexpr const unsigned _MSYMBOL_ = _NSYMBOL_ - _KSYMBOL_;
 
 } // namespace QCSP
 
