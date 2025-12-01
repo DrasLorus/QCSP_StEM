@@ -47,7 +47,7 @@ QCSP::CTimerGenerator::CTimerGenerator()
     : counter(0) {
 }
 
-void QCSP::CTimerGenerator::process(std::vector<int> & message) {
+void QCSP::CTimerGenerator::process(std::vector<uint_gf_t> & message) {
     namespace ch = std::chrono;
     using clk    = ch::system_clock;
 
@@ -59,8 +59,8 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
     // constexpr uint8_t high_mask = (1U << std::max(0, CSymbolGenerator::symbol_size() - 8U)) - 1U;
     constexpr uint8_t low_mask = (1U << std::min(CSymbolGenerator::symbol_size(), 8U)) - 1U;
 
-    int * const src = message.data();
-    memset(src, 0, CSymbolGenerator::K * sizeof(int));
+    uint_gf_t * const src = message.data();
+    memset(src, 0, CSymbolGenerator::K * sizeof(uint_gf_t));
 
     const ch::time_point<clk> now = clk::now();
     const std::time_t         t_c = clk::to_time_t(now);
@@ -95,7 +95,7 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
                 const uint8_t bit_offset = rem - bits_to_write;
                 const uint8_t mask       = uint8_t(low_mask) << bit_offset;
 
-                src[i++] += int((to_write & mask) >> bit_offset);
+                src[i++] += uint_gf_t((to_write & mask) >> bit_offset);
 
                 bits_to_write = CSymbolGenerator::symbol_size(); // New src[i] need full symbol
                 rem           = bit_offset;
@@ -105,7 +105,7 @@ void QCSP::CTimerGenerator::process(std::vector<int> & message) {
                 const uint8_t offset = CSymbolGenerator::symbol_size() - rem;
                 const uint8_t mask   = (1U << rem) - 1U;
 
-                src[i]        = int((to_write & mask) << offset);
+                src[i]        = uint_gf_t((to_write & mask) << offset);
                 bits_to_write = offset;
             }
         }

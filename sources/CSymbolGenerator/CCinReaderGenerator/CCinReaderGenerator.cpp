@@ -1,6 +1,7 @@
 #include "CSymbolGenerator/CCinReaderGenerator/CCinReaderGenerator.hpp"
 
 #include "utilities/conversions.hpp"
+#include "utilities/definitions.hpp"
 #include <cstring>
 
 #if defined(__unix__)
@@ -13,7 +14,7 @@ QCSP::CCinReaderGenerator::CCinReaderGenerator()
     byte_stream = &std::cin;
 }
 
-void QCSP::CCinReaderGenerator::process(std::vector<int> & symbols) {
+void QCSP::CCinReaderGenerator::process(std::vector<uint_gf_t> & symbols) {
 #if defined(__unix__)
     struct termios old = {0};
     if (tcgetattr(STDIN_FILENO, &old) < 0) {

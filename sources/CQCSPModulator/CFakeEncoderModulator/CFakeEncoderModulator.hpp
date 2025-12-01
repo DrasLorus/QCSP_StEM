@@ -13,7 +13,7 @@ namespace QCSP {
  */
 class CFakeEncoderModulator : public CCompleteModulator {
 protected:
-    virtual void encode(const std::vector<int> & message, std::vector<int> & codeword) override;
+    virtual void encode(const std::vector<uint_gf_t> & message, std::vector<int> & codeword) override;
 
 public:
     /**

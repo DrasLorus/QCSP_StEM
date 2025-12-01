@@ -49,7 +49,7 @@ public:
      *
      * @param symbols generated symbols
      */
-    virtual void process(std::vector<int> & symbols) = 0;
+    virtual void process(std::vector<uint_gf_t> & symbols) = 0;
 };
 
 } // namespace QCSP

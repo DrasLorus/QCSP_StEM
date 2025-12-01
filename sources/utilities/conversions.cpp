@@ -18,16 +18,16 @@
 namespace QCSP {
 
 template <>
-void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & output) {
+void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<uint_gf_t> & output) {
     constexpr unsigned nb_bits    = 6;
     constexpr unsigned nb_symbols = 20;
     constexpr uint8_t  int6_mask  = (1U << nb_bits) - 1U;
 
-    int * output_ptr = output.data();
+    uint_gf_t * output_ptr = output.data();
 
     unsigned sbl_index     = 0;
     unsigned bits_to_write = nb_bits;
-    memset(output_ptr, 0, nb_symbols * sizeof(int));
+    memset(output_ptr, 0, nb_symbols * sizeof(uint_gf_t));
     for (unsigned byte_counter = 0; byte_counter < ((nb_symbols * nb_bits) >> 3); byte_counter++) {
         const uint8_t to_write = input[byte_counter];
 
@@ -51,7 +51,7 @@ void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & out
             const uint8_t offset = nb_bits - remaining_bits;
             const uint8_t mask   = (1U << remaining_bits) - 1U;
 
-            output_ptr[sbl_index] = int((to_write & mask) << offset);
+            output_ptr[sbl_index] = uint_gf_t((to_write & mask) << offset);
             bits_to_write         = offset;
             assert(output_ptr[sbl_index] < (1 << nb_bits));
         }

@@ -46,7 +46,7 @@ public:
      */
     bool eof() const { return this->byte_stream->eof(); }
 
-    virtual void process(std::vector<int> & symbols) override;
+    virtual void process(std::vector<uint_gf_t> & symbols) override;
 
     /**
      * @brief Construct a new CByteReaderGenerator object

@@ -1,4 +1,5 @@
 
+#include <utilities/definitions.hpp>
 #include <vector>
 
 namespace QCSP {
@@ -12,7 +13,7 @@ namespace QCSP {
  * @param output a vector of `TSymbols` integers of `TBits` bits.
  */
 template <int TBits, int TSymbols>
-void bytes_to_int(const std::vector<char> & input, std::vector<int> & output);
+void bytes_to_int(const std::vector<char> & input, std::vector<uint_gf_t> & output);
 
 
 /**
@@ -22,6 +23,6 @@ void bytes_to_int(const std::vector<char> & input, std::vector<int> & output);
  * @param output a vector of `20` integers of `6` bits
  */
 template <>
-void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<int> & output);
+void bytes_to_int<6, 20>(const std::vector<char> & input, std::vector<uint_gf_t> & output);
 
 } // namespace QCSP

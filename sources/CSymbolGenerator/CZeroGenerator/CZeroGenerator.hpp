@@ -13,7 +13,7 @@ namespace QCSP {
  */
 class CZeroGenerator : public CSymbolGenerator {
 public:
-    virtual void process(std::vector<int> & symbols) override;
+    virtual void process(std::vector<uint_gf_t> & symbols) override;
 
     CZeroGenerator()          = default;
     virtual ~CZeroGenerator() = default;

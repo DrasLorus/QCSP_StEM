@@ -128,7 +128,7 @@ struct time_struct get_gps_time(float raw_time) {
 
 } // namespace
 
-void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
+void QCSP::CGPSGenerator::process(std::vector<uint_gf_t> & symbols) {
 
     const uint16_t curr_counter = this->counter++;
 
@@ -163,7 +163,7 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
     memcpy(bytes + 13, &curr_counter, sizeof(uint16_t));
     // clang-format on
 
-    memset(symbols.data(), 0, CSymbolGenerator::K * sizeof(int));
+    memset(symbols.data(), 0, CSymbolGenerator::K * sizeof(uint_gf_t));
 
     constexpr uint8_t lowMask = (1U << std::min(CSymbolGenerator::p, 8U)) - 1U;
 
@@ -178,7 +178,7 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
             const uint8_t bitOffset = rem - bitsToWrite;
             const uint8_t mask      = uint8_t(lowMask) << bitOffset;
 
-            symbols[i] += int((toWrite & mask) >> bitOffset);
+            symbols[i] += uint_gf_t((toWrite & mask) >> bitOffset);
             assert(symbols[i] < (1 << CSymbolGenerator::p));
             i++;
 
@@ -190,7 +190,7 @@ void QCSP::CGPSGenerator::process(std::vector<int> & symbols) {
             const uint8_t offset = CSymbolGenerator::p - rem;
             const uint8_t mask   = (1U << rem) - 1U;
 
-            symbols[i] = int((toWrite & mask) << offset);
+            symbols[i] = uint_gf_t((toWrite & mask) << offset);
             assert(symbols[i] < (1 << CSymbolGenerator::p));
             bitsToWrite = offset;
         }

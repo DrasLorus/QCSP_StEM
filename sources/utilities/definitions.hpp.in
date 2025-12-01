@@ -1,41 +1,90 @@
 #ifndef _DEFINITIONS_HPP_
 #define _DEFINITIONS_HPP_
 
+#include <type_traits>
+#include <cstdint>
+
 /**
  * @brief Main namespace for the whole QCSP project
  * 
  */
 namespace QCSP {
 
+struct uintxx_struct {
+    template <uint8_t Tvalue, std::enable_if_t<(Tvalue <= UINT8_MAX), uint8_t> = 0>
+    static constexpr uint8_t value() { return (uint8_t) Tvalue; }
+
+    template <uint16_t Tvalue, std::enable_if_t<(UINT8_MAX < Tvalue) && (Tvalue < UINT16_MAX), uint16_t> = 0>
+    static constexpr uint16_t value() { return (uint16_t) Tvalue; }
+
+    template <uint32_t Tvalue, std::enable_if_t<(UINT16_MAX <= Tvalue) && (Tvalue < UINT32_MAX), uint32_t> = 0>
+    static constexpr uint32_t value() { return (uint32_t) Tvalue; }
+
+    template <uint64_t Tvalue, std::enable_if_t<(UINT32_MAX <= Tvalue) && (Tvalue < UINT64_MAX), uint64_t> = 0>
+    static constexpr uint64_t value() { return (uint64_t) Tvalue; }
+};
+
+struct intxx_struct {
+    template <int8_t Tvalue, std::enable_if_t<(uint16_t(Tvalue - INT8_MIN) <= UINT8_MAX), int8_t> = 0>
+    static constexpr int8_t value() { return (int8_t) Tvalue; }
+
+    template <int16_t Tvalue, std::enable_if_t<(UINT8_MAX < uint16_t(Tvalue - INT8_MIN)) && (uint32_t(Tvalue - INT16_MIN) <= UINT16_MAX), int16_t> = 0>
+    static constexpr int16_t value() { return (int16_t) Tvalue; }
+
+    template <int32_t Tvalue, std::enable_if_t<(UINT16_MAX < uint32_t(Tvalue - INT16_MIN)) && (uint64_t(Tvalue - INT32_MIN) <= UINT32_MAX), int32_t> = 0>
+    static constexpr int32_t value() { return (int32_t) Tvalue; }
+
+    template <int64_t Tvalue, std::enable_if_t<(UINT32_MAX < uint64_t(Tvalue - INT32_MIN)), int64_t> = 0>
+    static constexpr int64_t value() { return (int64_t) Tvalue; }
+};
+
+template <int64_t LargestValue>
+using intxx_t = decltype(intxx_struct::value<LargestValue>());
+
+template <uint64_t LargestValue>
+using uintxx_t = decltype(uintxx_struct::value<LargestValue>());
+
+template <int64_t LargestValue, class T>
+constexpr intxx_t<LargestValue> to_intxx(T value) { return intxx_t<LargestValue>(value); }
+
+template <uint64_t LargestValue, class T>
+constexpr uintxx_t<LargestValue> to_uintxx(T value) { return uintxx_t<LargestValue>(value); }
+
+#define intxx_cst_t(V) intxx_t<V>(V)
+#define uintxx_cst_t(V) uintxx_t<V>(V)
+
 /**
  * @brief Number of bits per GF symbols
  * 
  */
-constexpr const unsigned _LOG2GF_  = @QCSP_GF_ORDER@;
+constexpr const auto _LOG2GF_  = uintxx_cst_t(@QCSP_GF_ORDER@);
 
 /**
  * @brief Order of the Galois Field
  * 
  */
-constexpr const unsigned _GF_      = 1 << _LOG2GF_;
+constexpr const auto _GF_      = uintxx_cst_t(1 << _LOG2GF_);
 
 /**
  * @brief Number of symbols per frame 
  * 
  */
-constexpr const unsigned _NSYMBOL_ = @QCSP_N_SYMBOLS@;
+constexpr const auto _NSYMBOL_ = uintxx_cst_t(@QCSP_N_SYMBOLS@);
 
 /**
  * @brief Number of information symbols per frame
  * 
  */
-constexpr const unsigned _KSYMBOL_ = @QCSP_K_SYMBOLS@;
+constexpr const auto _KSYMBOL_ = uintxx_cst_t(@QCSP_K_SYMBOLS@);
 
 /**
  * @brief Number of redundancy symbols per frame
  * 
  */
-constexpr const unsigned _MSYMBOL_ = _NSYMBOL_ - _KSYMBOL_;
+constexpr const auto _MSYMBOL_ = uintxx_cst_t(_NSYMBOL_ - _KSYMBOL_);
+
+using uint_gf_t = uintxx_t<_GF_>;
+using pn_t      = intxx_t<-1>;
 
 } // namespace QCSP
 

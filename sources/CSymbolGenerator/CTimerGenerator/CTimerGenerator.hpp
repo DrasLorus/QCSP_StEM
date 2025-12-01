@@ -35,7 +35,7 @@ public:
     CTimerGenerator();
     virtual ~CTimerGenerator() = default;
 
-    virtual void process(std::vector<int> & message) override;
+    virtual void process(std::vector<uint_gf_t> & message) override;
 };
 
 } // namespace QCSP

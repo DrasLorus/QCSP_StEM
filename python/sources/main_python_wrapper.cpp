@@ -7,12 +7,14 @@
 
 namespace py = pybind11;
 
+using QCSP::uint_gf_t;
+
 constexpr const size_t msg_size    = QCSP::CCompleteModulator::message_size();
 constexpr const size_t string_size = (msg_size * QCSP::_LOG2GF_) / 8;
 
-std::vector<int> * python_bytes_to_int(const std::string & input_char) {
+std::vector<uint_gf_t> * python_bytes_to_int(const std::string & input_char) {
     const std::vector<char> input(input_char.begin(), input_char.end());
-    std::vector<int> *      output = new std::vector<int>(msg_size);
+    std::vector<uint_gf_t> *      output = new std::vector<uint_gf_t>(msg_size);
 
     if (input.size() != string_size) {
         throw std::invalid_argument(

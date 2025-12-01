@@ -37,7 +37,7 @@ protected:
      * @param message of K symbols in GF(_GF_)
      * @param codeword of N symbols in GF(_GF_)
      */
-    virtual void encode(const std::vector<int> & message, std::vector<int> & codeword);
+    virtual void encode(const std::vector<uint_gf_t> & message, std::vector<int> & codeword);
 
     /**
      * @brief Modulate a codeword into a ccsk_frame

@@ -59,7 +59,7 @@ public:
     int  launch();
     void safe_join();
 
-    virtual void process(std::vector<int> & symbols) override;
+    virtual void process(std::vector<uint_gf_t> & symbols) override;
 
     CGPSGenerator(const std::string & tty_gps = "/dev/ttyUSB0", bool localtime = true, bool do_launch = true);
 

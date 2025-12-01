@@ -8,7 +8,7 @@ QCSP::CByteReaderGenerator::CByteReaderGenerator()
       buffer(nb_bytes, 0) {
 }
 
-void QCSP::CByteReaderGenerator::process(std::vector<int> & symbols) {
+void QCSP::CByteReaderGenerator::process(std::vector<uint_gf_t> & symbols) {
     static char * const ptr_buffer = this->buffer.data();
 
     std::memset(ptr_buffer, 0, nb_bytes); // Reset buffer

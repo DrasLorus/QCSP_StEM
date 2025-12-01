@@ -27,7 +27,7 @@ protected:
     virtual bool is_implemented() const final { return true; };
 
 public:
-    virtual void process(std::vector<int> & symbols) override;
+    virtual void process(std::vector<uint_gf_t> & symbols) override;
 
     /**
      * @brief Construct a new CCinReaderGenerator object

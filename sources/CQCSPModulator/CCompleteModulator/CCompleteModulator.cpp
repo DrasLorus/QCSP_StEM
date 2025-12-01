@@ -6,10 +6,10 @@
 
 #include "CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp" // IWYU pragma: keep
 
-void QCSP::CCompleteModulator::encode(const std::vector<int> & message, std::vector<int> & codeword) {
+void QCSP::CCompleteModulator::encode(const std::vector<uint_gf_t> & message, std::vector<uint_gf_t> & codeword) {
     assert(message.size() == CQCSPModulator::K);
     assert(codeword.size() == CQCSPModulator::N);
-    const int * const KSYMB  = message.data();
+    const uint_gf_t * const KSYMB  = message.data();
     int *             CODEWD = codeword.data();
 
     static std::vector<int> NSYMBV(CQCSPModulator::N, 0);
