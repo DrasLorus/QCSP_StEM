@@ -1,7 +1,7 @@
 /**
  * @internal
  * @file conversions.cpp
- * @author your name (you@domain.com)
+ * @author Camille Monière (camille.moniere@univ-ubs.fr)
  * @brief 
  * @version 0.1
  * @date 2023-12-14

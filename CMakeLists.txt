@@ -110,7 +110,7 @@ else ()
 endif ()
 
 add_library (
-  qcsp_modulator_obj OBJECT
+	qcsp_modulator_obj STATIC
   sources/CQCSPModulator/CQCSPModulator.cpp
   sources/CQCSPModulator/CCompleteModulator/CCompleteModulator.cpp
   sources/CQCSPModulator/CFakeEncoderModulator/CFakeEncoderModulator.cpp
