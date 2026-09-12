@@ -7,7 +7,7 @@ namespace QCSP {
 
 /**
  * @brief Aguments of the timer thread
- * 
+ *
  */
 typedef struct {
     bool                time_limited;
@@ -17,7 +17,7 @@ typedef struct {
 
 /**
  * @brief timer thread procedure in PThread format
- * 
+ *
  * @param arg a timer_arg_t cast to (void *)
  * @return void* nullptr
  */

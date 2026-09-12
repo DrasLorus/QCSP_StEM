@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "CQCSPModulator/CQCSPModulator.hpp"
+#include "utilities/definitions.hpp"
 
 namespace QCSP {
 
@@ -37,7 +38,7 @@ protected:
      * @param message of K symbols in GF(_GF_)
      * @param codeword of N symbols in GF(_GF_)
      */
-    virtual void encode(const std::vector<uint_gf_t> & message, std::vector<int> & codeword);
+    virtual void encode(const std::vector<uint_gf_t> & message, std::vector<uint_gf_t> & codeword);
 
     /**
      * @brief Modulate a codeword into a ccsk_frame
@@ -45,7 +46,7 @@ protected:
      * @param codeword of N symbols in GF(_GF_)
      * @param ccsk_frame of N \f$\times\f$ q symbols in {-1 ; 1}
      */
-    virtual void modulate(const std::vector<int> & codeword, std::vector<int> & ccsk_frame);
+    virtual void modulate(const std::vector<uint_gf_t> & codeword, std::vector<int> & ccsk_frame);
 
     /**
      * @brief Overodulate a ccsk_frame into a QCSP frame
@@ -56,7 +57,7 @@ protected:
     virtual void overmodulate(const std::vector<int> & ccsk_frame, std::vector<int> & frame);
 
 public:
-    virtual void process(const std::vector<int> & input, std::vector<int> & output) override;
+    virtual void process(const std::vector<uint_gf_t> & input, std::vector<int> & output) override;
 
     /**
      * @brief Construct a new CCompleteModulator object

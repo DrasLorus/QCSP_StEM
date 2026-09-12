@@ -7,7 +7,7 @@ namespace QCSP {
 
 /**
  * @brief Define the different possible generators
- * 
+ *
  */
 typedef enum {
     GEN_UNKNOW,
@@ -21,7 +21,7 @@ typedef enum {
 
 /**
  * @brief Define the different possible modulators
- * 
+ *
  */
 typedef enum {
     MOD_UNKNOW,
@@ -31,8 +31,8 @@ typedef enum {
 } modulator_t;
 
 /**
- * @brief Helper structure containing emitter settings  
- * 
+ * @brief Helper structure containing emitter settings
+ *
  */
 struct emitter_parameters {
     std::string device_args;
@@ -61,6 +61,7 @@ struct emitter_parameters {
     double      bandwidth;
     std::string cpu_format;
     std::string otw_format;
+    std::string param_file;
 };
 
 } // namespace QCSP

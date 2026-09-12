@@ -6,8 +6,8 @@ namespace QCSP {
 
 /**
  * @brief Utility function to convert 8-bit char to arbitrary-sized integers
- * 
- * @tparam TBits Number of bits per integer 
+ *
+ * @tparam TBits Number of bits per integer
  * @tparam TSymbols Number of bytes per symbols
  * @param input a vector of \f$\frac{TSymbols \times TBits}{8}\f$ bytes
  * @param output a vector of `TSymbols` integers of `TBits` bits.
@@ -15,10 +15,9 @@ namespace QCSP {
 template <int TBits, int TSymbols>
 void bytes_to_int(const std::vector<char> & input, std::vector<uint_gf_t> & output);
 
-
 /**
- * @brief Specialization of bytes_to_int<>() for TBits = `6` and TSymbols = `20` 
- * 
+ * @brief Specialization of bytes_to_int<>() for TBits = `6` and TSymbols = `20`
+ *
  * @param input a vector of `15` bytes
  * @param output a vector of `20` integers of `6` bits
  */

@@ -9,7 +9,7 @@ namespace QCSP {
 
 /**
  * @brief Generate null frames
- * 
+ *
  */
 class CZeroGenerator : public CSymbolGenerator {
 public:

@@ -39,6 +39,7 @@
 #include "CSymbolGenerator/CZeroGenerator/CZeroGenerator.hpp"
 #include "threads/timer.hpp"
 #include "threads/user_interface.hpp"
+#include "utilities/definitions.hpp"
 #include "utilities/hmi_functions.hpp"
 #include "utilities/usrp_functions.hpp"
 
@@ -92,7 +93,7 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
     std::vector<int>                 best_N;
     std::vector<std::complex<float>> h_filter;
 
-    QCSP::load_settings("../data/parameters_20210903.mat", n_frame, n_s, pn, best_N, h_filter);
+    QCSP::load_settings(prm.param_file, n_frame, n_s, pn, best_N, h_filter);
 
     std::shared_ptr<QCSP::CSymbolGenerator> generator;
     switch (prm.gen_type) {
@@ -147,9 +148,9 @@ int UHD_SAFE_MAIN(int argc, char * argv[]) {
 
     QCSP::CHalfCorrEngine<float> * conv_engine;
 
-    std::vector<int>    message(qcsp_message_size, 0);
-    std::vector<int>    qcsp_frame(qcsp_frame_size, 0);
-    std::vector<int8_t> frame_upsp_int8(conv_size, 0);
+    std::vector<QCSP::uint_gf_t> message(qcsp_message_size, 0);
+    std::vector<int>             qcsp_frame(qcsp_frame_size, 0);
+    std::vector<int8_t>          frame_upsp_int8(conv_size, 0);
 
     std::vector<int8_t>::iterator data_beg_upsp = frame_upsp_int8.begin() + (h_filter.size() - 1);
 

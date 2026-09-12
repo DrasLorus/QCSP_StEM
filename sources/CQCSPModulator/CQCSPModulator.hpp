@@ -11,7 +11,7 @@ namespace QCSP {
 
 /**
  * @brief helper function to retrieve a modulator_t from a std::string
- * 
+ *
  * @param in moulator string
  * @return QCSP::modulator_t a modulator type
  */
@@ -80,7 +80,7 @@ public:
      * @param input generated symbols
      * @param output modulated frame
      */
-    virtual void process(const std::vector<int> & input, std::vector<int> & output) = 0;
+    virtual void process(const std::vector<uint_gf_t> & input, std::vector<int> & output) = 0;
 };
 
 } // namespace QCSP

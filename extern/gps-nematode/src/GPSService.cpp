@@ -289,7 +289,7 @@ void GPSService::read_GPGSV(const NMEASentence & nmea) {
         this->fix.visibleSatellites = (int32_t) parseInt(nmea.parameters[2]);
         if (this->fix.trackingSatellites == 0) {
             this->fix.visibleSatellites = 0; // if no satellites are tracking, then none are visible!
-        }                                    // Also NMEA defaults to 12 visible when chip powers on. Obviously not right.
+        } // Also NMEA defaults to 12 visible when chip powers on. Obviously not right.
 
         uint32_t totalPages  = (uint32_t) parseInt(nmea.parameters[0]);
         uint32_t currentPage = (uint32_t) parseInt(nmea.parameters[1]);

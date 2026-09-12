@@ -1,3 +1,4 @@
+#include <boost/program_options/value_semantic.hpp>
 #include <iostream>
 
 #include <boost/program_options.hpp>
@@ -14,7 +15,7 @@
 #include "./hmi_functions.hpp"
 #include "./usrp_functions.hpp"
 
-/// @brief Just an alias for boost::program_options 
+/// @brief Just an alias for boost::program_options
 namespace po = boost::program_options;
 
 #define USAGE(desc) "Usage: qcsp_standalone_emitter <rate> <freq> <gain> <antenna> [options]\n"           \
@@ -84,7 +85,8 @@ int QCSP::parse_user_input(int argc, char * argv[], boost::program_options::vari
         "tty", po::value<std::string>(), "Set the TTY used to read GPS data. Only required with the 'gps' generator.")(
         "input-file", po::value<std::string>(), "Set the file used as input. Only required with the 'file' generator.")(
         "no-ui", "Disable the UI (program no longer cleanly stoppable by the user).")(
-        "probe", "Look for all available USRP.");
+        "probe", "Look for all available USRP.")(
+        "parameters", po::value<std::string>()->default_value("../data/parameters_20210903.mat"), "Path of the QCSP parameter mat-file.");
 
     po::positional_options_description p;
     p.add("rate", 1).add("freq", 1).add("gain", 1).add("antenna", 1);
@@ -276,6 +278,8 @@ void QCSP::parse_vm(const boost::program_options::variables_map & vm, emitter_pa
 
     prm.cpu_format = vm.at("cpu-format").as<std::string>();
     prm.otw_format = vm.at("otw-format").as<std::string>();
+
+    prm.param_file = vm.at("parameters").as<std::string>();
 }
 
 std::ostream & QCSP::warning_stream(std::ostream & os) {

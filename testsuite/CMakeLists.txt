@@ -24,7 +24,7 @@ add_custom_command (
 
 set (
   LOCAL_CMDLINE_ZERO
-  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;zero;-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;1000
+  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;zero;-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;1000;--parameters;${CMAKE_SOURCE_DIR}/data/parameters_20210903.mat
 )
 
 add_custom_command (
@@ -45,7 +45,7 @@ endif ()
 add_dependencies (zero_file_comparator zero_test_files)
 
 add_test (NAME "The transmitter output for the CZeroGenerator is as expected."
-          COMMAND zero_file_comparator
+	COMMAND zero_file_comparator
 )
 
 # TEST WITH STDIN GENERATOR
@@ -69,7 +69,7 @@ add_custom_target (random_data_archive_files DEPENDS ${LOCAL_INPUT_FILE} ${LOCAL
 
 set (
   LOCAL_CMDLINE
-  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;stdin;-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;10000
+  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;stdin;-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;10000;--parameters;${CMAKE_SOURCE_DIR}/data/parameters_20210903.mat
 )
 
 add_custom_command (
@@ -106,7 +106,7 @@ configure_file (
 
 set (
   LOCAL_CMDLINE
-  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;file;--input-file;${LOCAL_INPUT_FILE};-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;10000
+  $<TARGET_FILE:qcsp_standalone_emitter>;--to-file;--output-file;${LOCAL_RESULT_FILE};--no-ui;--generator;file;--input-file;${LOCAL_INPUT_FILE};-r;1e6;-f;433.92e6;-g;50;-a;TX/RX;--count;10000;--parameters;${CMAKE_SOURCE_DIR}/data/parameters_20210903.mat
 )
 add_custom_command (
   OUTPUT ${LOCAL_RESULT_FILE}

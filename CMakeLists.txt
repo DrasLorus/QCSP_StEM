@@ -163,3 +163,6 @@ endif ()
 if (ENABLE_DOCUMENTATION)
   add_subdirectory (documentation)
 endif ()
+
+include (GNUInstallDirs)
+install (TARGETS qcsp_standalone_emitter)
