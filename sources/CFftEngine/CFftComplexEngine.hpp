@@ -1,12 +1,12 @@
 /**
  * @file CFftComplexEngine.hpp
  * @author Camille Monière (camille.moniere@univ-ubs.fr)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-12-14
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #ifndef _FFT_COMPLEX_ENGINE_HPP_
 #define _FFT_COMPLEX_ENGINE_HPP_
@@ -23,16 +23,16 @@ namespace QCSP {
 
 /**
  * @brief Alias class for Complex FFT
- * 
- * @tparam TFloat 
+ *
+ * @tparam TFloat
  */
 template <class TFloat>
 using CFftComplexEngine = CFftwDftEngine<TFloat, true>;
 
 /**
  * @brief Alias class for Complex IFFT
- * 
- * @tparam TFloat 
+ *
+ * @tparam TFloat
  */
 template <class TFloat>
 using CIfftComplexEngine = CFftwDftEngine<TFloat, false>;

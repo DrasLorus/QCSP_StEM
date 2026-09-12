@@ -25,7 +25,7 @@ namespace QCSP {
 
 /**
  * @brief Generate symbols from the SoC time
- * 
+ *
  */
 class CTimerGenerator : public CSymbolGenerator {
 private:

@@ -53,7 +53,7 @@ public:
      *
      */
     CByteReaderGenerator();
-    
+
     CByteReaderGenerator(const CByteReaderGenerator &) = delete;
     CByteReaderGenerator(CByteReaderGenerator &&)      = delete;
 

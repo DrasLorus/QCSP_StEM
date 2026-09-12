@@ -1,12 +1,12 @@
 /**
  * @file CCinReaderGenerator.hpp
  * @author Camille Monière (camille.moniere@univ-ubs.fr)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-12-13
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #ifndef _C_CIN_READER_GENERATOR_HPP_
 #define _C_CIN_READER_GENERATOR_HPP_
@@ -37,7 +37,7 @@ public:
 
     /**
      * @brief Destroy the CCinReaderGenerator object
-     * 
+     *
      */
     virtual ~CCinReaderGenerator() = default;
 };

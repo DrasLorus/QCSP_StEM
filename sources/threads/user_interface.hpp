@@ -7,7 +7,7 @@ namespace QCSP {
 
 /**
  * @brief UI thread arguments
- * 
+ *
  */
 typedef struct {
     std::atomic<bool> & bRunning;
@@ -16,7 +16,7 @@ typedef struct {
 
 /**
  * @brief UI thread procedure in the PThread format
- * 
+ *
  * @param arg ui_arg_t cast to (void *)
  * @return void* nullptr
  */

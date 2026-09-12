@@ -12,8 +12,8 @@
 namespace QCSP {
 
 /**
- * @brief check for valid USRP device, like the UHD-provided program uhd_find_devices 
- * 
+ * @brief check for valid USRP device, like the UHD-provided program uhd_find_devices
+ *
  * @details see https://files.ettus.com/manual/page_identification.html
  *
  * @param device_args a device ID string
@@ -22,7 +22,7 @@ void check_usrp(uhd::device_addr_t device_args = std::string(""));
 
 /**
  * @brief safely initialize a USRP
- * 
+ *
  * @details see https://files.ettus.com/manual/classuhd_1_1usrp_1_1multi__usrp.html
  * and https://files.ettus.com/manual/classuhd_1_1tx__streamer.html
  *
@@ -37,7 +37,7 @@ void init_usrp(
 
 /**
  * @brief Transmit buffer to the USRP using tx_streamer, using max_samps_per_buff sized OTW buffers
- * 
+ *
  * @details see https://files.ettus.com/manual/classuhd_1_1tx__streamer.html#aeb2e0f44810693d9da99ea1e04fad21f
  * and https://files.ettus.com/manual/structuhd_1_1tx__metadata__t.html
  *
@@ -79,7 +79,7 @@ void send_from_memory(uhd::tx_streamer::sptr tx_stream, const std::vector<samp_t
 
 /**
  * @brief Transmit buffer to the USRP using tx_streamer in one go
- * 
+ *
  * @details see https://files.ettus.com/manual/classuhd_1_1tx__streamer.html#aeb2e0f44810693d9da99ea1e04fad21f
  * and https://files.ettus.com/manual/structuhd_1_1tx__metadata__t.html
  *
@@ -107,7 +107,7 @@ void send_from_memory(uhd::tx_streamer::sptr tx_stream, const std::vector<samp_t
 
 /**
  * @brief write buffer to the file filename
- * 
+ *
  * @tparam samp_type sample type
  * @param filename file to write to
  * @param buffer samples to write in filename

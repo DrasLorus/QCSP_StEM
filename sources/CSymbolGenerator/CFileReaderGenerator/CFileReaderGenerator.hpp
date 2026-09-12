@@ -11,7 +11,7 @@ namespace QCSP {
 
 /**
  * @brief Implement a CByteReaderGenerator specialized in reading file stream
- * 
+ *
  */
 class CFileReaderGenerator : public CByteReaderGenerator {
 protected:
