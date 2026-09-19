@@ -15,6 +15,8 @@
 #include <sstream>
 #include <string>
 
+#include <nmeaparse/config.h>
+
 namespace nmea {
 
 class NumberConversionError : public std::exception {
@@ -25,7 +27,7 @@ public:
 
     virtual ~NumberConversionError() {};
 
-    const char * what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+    const char * what() const NMEA_NOEXCEPT {
         return message.c_str();
     }
 };

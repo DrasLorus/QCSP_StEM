@@ -14,7 +14,7 @@
     }:
     {
       overlays.default = final: prev: {
-        presentation = final.callPackage (
+        qcsp-stem = final.callPackage (
           { stdenv, pkgs, ... }:
           # You can put here the derivation to build your program, for instance:
 
@@ -24,18 +24,25 @@
             version = "unstable";
 
             nativeBuildInputs = with pkgs; [
-              cmake
+              clang
+			  cmake
+			  doxygen
+			  graphviz
+			  llvm
               ninja
             ];
 
             buildInputs = with pkgs; [
               boost
 			  catch2
+			  clang-tools
+			  doxygen
               fftw
               fftwFloat
               matio
 			  python3
               uhd
+			  zsh
 			  zstd
             ];
 
@@ -59,8 +66,8 @@
       {
         # Create a new package
         packages = {
-          presentation = pkgs.presentation;
-          default = self.packages.${system}.presentation; # default program: this way, typing "nix develop" will directly put you in a shell needed to develop the above your program, running "nix build/run" will directly build/run this program etc.
+          qcsp-stem = pkgs.qcsp-stem;
+          default = self.packages.${system}.qcsp-stem; # default program: this way, typing "nix develop" will directly put you in a shell needed to develop the above your program, running "nix build/run" will directly build/run this program etc.
         };
       }
     ));

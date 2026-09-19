@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <nmeaparse/config.h>
+
 // read class definition for info
 #define NMEA_PARSER_MAX_BUFFER_SIZE 2000
 
@@ -68,7 +70,7 @@ public:
     NMEAParseError(std::string msg, NMEASentence n);
     virtual ~NMEAParseError();
     
-    const char * what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
+    const char * what() const NMEA_NOEXCEPT;
 };
 
 class NMEAParser {

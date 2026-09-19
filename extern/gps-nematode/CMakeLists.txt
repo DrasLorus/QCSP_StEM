@@ -28,6 +28,7 @@ set (
 
 set (
   headers
+  include/nmeaparse/config.h
   include/nmeaparse/Event.h
   include/nmeaparse/GPSFix.h
   include/nmeaparse/GPSService.h

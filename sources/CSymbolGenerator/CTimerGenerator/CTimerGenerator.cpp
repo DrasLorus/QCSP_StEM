@@ -51,8 +51,8 @@ void QCSP::CTimerGenerator::process(std::vector<uint_gf_t> & message) {
     namespace ch = std::chrono;
     using clk    = ch::system_clock;
 
-    constexpr const unsigned message_bit_size  = CSymbolGenerator::message_size()
-                                               * CSymbolGenerator::symbol_size();
+    constexpr const unsigned message_bit_size = CSymbolGenerator::message_size()
+                                              * CSymbolGenerator::symbol_size();
     constexpr const unsigned message_byte_size = message_bit_size / 8;
     constexpr const bool     more_two_bytes    = CSymbolGenerator::symbol_size() > 8;
 
@@ -70,7 +70,7 @@ void QCSP::CTimerGenerator::process(std::vector<uint_gf_t> & message) {
     strftime(time_str, time_str_size, "%T", std::localtime(&t_c));
 
     char counter_str[time_str_size];
-    sprintf(counter_str, "%05u|", this->counter);
+    snprintf(counter_str, time_str_size, "%05u|", this->counter);
 
     this->counter++;
 

@@ -69,3 +69,4 @@ sources/CQCSPModulator/NBLDPC_Matrices/nbldpc_matrices.hpp
 documentation/doxygen
 # Backup files
 *.bak
+result

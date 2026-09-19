@@ -15,6 +15,7 @@
 #include <iostream>
 #include <nmeaparse/NMEAParser.h>
 #include <nmeaparse/NumberConversion.h>
+#include <nmeaparse/config.h>
 #include <sstream>
 
 using namespace std;
@@ -30,7 +31,7 @@ NMEAParseError::NMEAParseError(std::string msg, NMEASentence n)
 
 NMEAParseError::~NMEAParseError() {}
 
-const char * NMEAParseError::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+const char * NMEAParseError::what() const NMEA_NOEXCEPT {
     return message.c_str();
 }
 

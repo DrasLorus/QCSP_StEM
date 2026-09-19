@@ -45,6 +45,11 @@
 
 // using FaLN_X::CFrame;
 
+template <>
+unsigned QCSP::CFftwDftEngineInterface<float>::nb_allocated_engine;
+template <>
+unsigned QCSP::CFftwDftEngineInterface<double>::nb_allocated_engine;
+
 namespace po = boost::program_options;
 
 template <typename Tin, typename Tout, uint32_t inSize>

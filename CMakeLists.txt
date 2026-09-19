@@ -4,7 +4,8 @@ cmake_minimum_required (VERSION 3.16)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
-set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+set (CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 project (QCSP_StEM LANGUAGES CXX)
 
@@ -23,6 +24,7 @@ option (ENABLE_PYTHON_API "enable build of Python APIusing pybind11" ON)
 option (ENABLE_DOCUMENTATION "enable build of Doxygen documentation" ON)
 
 # Find dependencies ###############################################################################
+cmake_policy (SET CMP0167 NEW)
 find_package (UHD REQUIRED)
 find_package (Boost REQUIRED COMPONENTS program_options)
 find_package (Threads REQUIRED)
