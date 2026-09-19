@@ -7,7 +7,7 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 set (CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
-project (QCSP_StEM LANGUAGES CXX)
+project (QCSP_StEm LANGUAGES CXX)
 
 # Options #########################################################################################
 option (UNSAFE_OPTIMIZATION "enable unsafe flags" OFF)
@@ -168,3 +168,7 @@ endif ()
 
 include (GNUInstallDirs)
 install (TARGETS qcsp_standalone_emitter)
+install (FILES data/parameters_20210903.mat DESTINATION ${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME})
+if (ENABLE_DOCUMENTATION)
+	install (DIRECTORY ${CMAKE_SOURCE_DIR}/documentation/doxygen/html TYPE DOC)
+endif ()
