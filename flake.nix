@@ -25,28 +25,25 @@
 
             nativeBuildInputs = with pkgs; [
               clang
-			  cmake
-			  doxygen
-			  graphviz
-			  llvm
+              cmake
+              doxygen
+              graphviz
               ninja
+              llvm
             ];
 
             buildInputs = with pkgs; [
               boost
-			  catch2
-			  clang-tools
-			  doxygen
+              catch2
               fftw
               fftwFloat
               matio
-			  python3
+              python3
               uhd
-			  zsh
-			  zstd
+              zstd
             ];
 
-			doCheck = true;
+            doCheck = true;
 
             cmakeFlags = [ "-DCMAKE_BUILD_TYPE=Release -DENABLE_TESTING=ON" ];
 
